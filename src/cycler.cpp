@@ -1,9 +1,9 @@
 // Class to handle values that cycle over time
-
+// Lerp formula = ((1-t) * A) + (t * b)
 #include "cycler.h"
 
 // Constructor
-Cycler::Cycler(period=1000, min=0.0, max=255.0, cycle_mode=Cycler::STATIC){
+Cycler::Cycler(period=1000, min=0.0, max=255.0, cycle_mode=STATIC){
     // Set up period and speed
     _period = period;
     calculate_speed();
@@ -12,6 +12,7 @@ Cycler::Cycler(period=1000, min=0.0, max=255.0, cycle_mode=Cycler::STATIC){
     _max = max;
     _value = _min;
     _cycle_mode = cycle_mode;
+    _duty = 0.5;
 }
 
 // Initialise the object
@@ -41,8 +42,10 @@ void Cycler::set_cycle_mode(cycle_t cycle_mode){
     }
 }
 
-
-float get_value();
+// Get the current value of the cycler
+float Cycler::get_value(){
+    return _value;
+}
 
 // Update the cycler
 //
