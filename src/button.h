@@ -1,16 +1,13 @@
-/*
-    Push button functionality
-*/
+// Convenience class to use a button with Arduino
 
 #ifndef button_h
 #define button_h
 
 #include "Arduino.h"
 
-class Button
-{
+class Button {
     public:
-        Button(uint8_t pin, uint8_t debounce_time, void (*callback)());
+        Button(uint8_t pin, uint8_t debounce_time, void (*low_to_high_callback)()=NULL, void (*high_to_low_callback)()=NULL);
         void init();
         void update();
 
@@ -25,13 +22,16 @@ class Button
         bool _is_pressed;
     
         // The state of the pin read at the last update
-        bool _last_read;
+        bool _last_state;
     
         // When the button last transitioned from low to high (without bouncing)
-        unsigned long _last_activation;
+        unsigned long _last_state_change;
 
         // Callback for when the button is pressed
-        void (*_callback)();
+        void (*_low_to_high_callback)();
+
+        // Callback for when the button is released
+        void (*_high_to_low_callback)();
 };
 
 #endif

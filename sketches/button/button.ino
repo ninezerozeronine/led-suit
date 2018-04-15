@@ -1,12 +1,19 @@
-#include <button.h>
+#include "button.h"
 
-void blah(){
-    Serial.println("Button Pressed");
+void button_pressed(){
+    Serial.println("Button pressed");
     Serial.println(millis());
 }
 
+void button_released(){
+    Serial.println("Button released");
+    Serial.println(millis());	
+}
+
 int BUTTON_PIN = 2;
-Button button(BUTTON_PIN, 50, &blah);
+Button button(BUTTON_PIN, 10, &button_pressed, &button_released);
+// Button button(BUTTON_PIN, 10, &button_pressed);
+
 
 void setup() {
     // put your setup code here, to run once:
