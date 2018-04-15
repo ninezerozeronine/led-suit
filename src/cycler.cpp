@@ -1,3 +1,134 @@
+// Class to handle values that cycle over time
+
+#include "cycler.h"
+
+// Constructor
+Cycler::Cycler(period=1000, min=0.0, max=255.0, cycle_mode=Cycler::STATIC){
+    // Set up period and speed
+    _period = period;
+    calculate_speed();
+
+    _min = min;
+    _max = max;
+    _value = _min;
+    _cycle_mode = cycle_mode;
+}
+
+// Initialise the object
+void Cycler::init(){
+    _last_update = milis();
+}
+
+// Set the cycle type
+void Cycler::set_cycle_mode(cycle_t cycle_mode){
+    _cycle_mode = cycle_mode;
+    switch (_cycle_mode) {
+        case STATIC:
+            // Nothing to do
+            break;
+        case SIN:
+            _setup_SIN_cycle();
+            break;
+        case SAWTOOTH:
+            _setup_SAWTOOTH_cycle();
+            break;
+        case TRIANGLE:
+            _setup_TRIANGLE_cycle();
+            break;
+        case SQUARE:
+            _setup_SQUARE_cycle();
+            break;
+    }
+}
+
+
+float get_value();
+
+// Update the cycler
+//
+// Class this once each time around the main arduino loop
+void Cycler::update(void (*min_callback)()=NULL, void (*max_callback)()=NULL){
+    // Get how long it's been since the last update
+    unsigned long current_time = millis();
+    uint8_t elapsed_millis = current_time - _last_update;
+
+    // If measurable time has passed
+    if (elapsed_millis > 0) {
+        // Store this read time
+        _last_update = current_time;
+
+        // Update based on current_mode
+        switch (_mode) {
+            case STATIC:
+                // Nothing to do!
+                break;
+            case CYCLE_HUE:
+                update_cycle_hue(elapsed_millis);
+                break;
+            case PULSE_VALUE:
+                update_pulse_value(elapsed_millis);
+                break;
+            case PULSE_VALUE_CHANGE_HUE:
+                update_pulse_value_change_hue(elapsed_millis);
+                break;
+            case PULSE_VALUE_CYCLE_HUE:
+                update_pulse_value_change_hue(elapsed_millis);
+                break;
+        }
+    }
+}
+void set_min(float min);
+void set_max(float max);
+void set_speed(float speed);
+void set_period(unsigned long period);
+void set_min_now();
+void set_max_now();
+
+
+
+
+
+(void (*min_callback)()=NULL, void (*max_callback)()=NULL){
+    // Get how long it's been since the last update
+    unsigned long current_time = millis();
+    uint8_t elapsed_millis = current_time - _last_update;
+
+    // If measurable time has passed
+    if (elapsed_millis > 0) {
+        // Store this read time
+        _last_update = current_time;
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 class Cycler {
     public:
         enum mode_t {
