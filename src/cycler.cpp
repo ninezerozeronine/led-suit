@@ -3,54 +3,160 @@
 #include "cycler.h"
 
 // Constructor
-Cycler::Cycler(period=1000, min=0.0, max=255.0, cycle_mode=STATIC){
-    // Set up period and speed
+Cycler::Cycler(period=1000, min=0.0, max=255.0, cycle_mode=STATIC) {
+    if (period < 1) {
+        period = 1;
+    }
     _period = period;
-    calculate_speed();
-
     _min = min;
     _max = max;
-    _value = _min;
+    _last_value = _min;
     _cycle_mode = cycle_mode;
     _duty = 0.5;
+    _milli_progress = 0;
+    _last_update = 0;
+    _set_cycle_mode(_cycle_mode);
 }
 
+
 // Initialise the object
-void Cycler::init(){
+//
+// Call this outside the constructor so caller has control when it runs
+void Cycler::init() {
     _last_update = milis();
 }
 
-// Set the cycle type
-void Cycler::set_cycle_mode(cycle_t cycle_mode){
+void Cycler::set_cycle_mode(cycle_t cycle_mode) {
     _cycle_mode = cycle_mode;
+    _init_cycle();
+}
+
+void Cycler::_init_cycle() {
     switch (_cycle_mode) {
         case STATIC:
-            // Nothing to do
+            _init_STATIC_cycle();
             break;
         case SIN:
-            _setup_SIN_cycle();
+            _init_SIN_cycle();
             break;
         case SAWTOOTH:
-            _setup_SAWTOOTH_cycle();
+            _init_SAWTOOTH_cycle();
             break;
         case TRIANGLE:
-            _setup_TRIANGLE_cycle();
+            _init_TRIANGLE_cycle();
             break;
         case SQUARE:
-            _setup_SQUARE_cycle();
+            _init_SQUARE_cycle();
             break;
     }
 }
 
-// Get the current value of the cycler
-float Cycler::get_value(){
-    return _value;
+void Cycler::_init_STATIC_cycle() {
+    if (_value > _max) {
+        _value = _max;
+    }
+    if (value < min) {
+        value = min;
+    }
 }
 
-// Update the cycler
+void Cycler::_init_SIN_cycle() {
+
+}
+
+void Cycler::_init_SAWTOOTH_cycle(){
+    _milli_progress = _normalised_progress * float(period);
+}
+void Cycler::_init_TRIANGLE_cycle();
+void Cycler::_init_SQUARE_cycle();
+
+// Get the current value of the cycler
+float Cycler::get_value() {
+    switch (_cycle_mode) {
+        case STATIC:
+            _calculate_STATIC();
+            break;
+        case SIN:
+            _calculate_SIN();
+            break;
+        case SAWTOOTH:
+            _calculate_SAWTOOTH();
+            break;
+        case TRIANGLE:
+            _calculate_TRIANGLE();
+            break;
+        case SQUARE:
+            _calculate_SQUARE();
+            break;
+    }
+}
+
+float _calculate_STATIC() {
+    return _value;
+}
+void _calculate_SIN();
+void _calculate_SAWTOOTH();
+void _calculate_TRIANGLE();
+float _calculate_SQUARE() {
+    unsigned long timebase = millis() + offset;
+
+
+}
+
+// Set the minimum value that the cycler will reach
+void Cycler::set_min(float min) {
+    _min = min;
+    _init_cycle();
+}
+
+// Set the maximum value that the cycler will reach
+void Cycler::set_max(float max) {
+    _max = max;
+    _init_cycle();
+}
+
+// Set the period of the cycler
+void Cycler::set_period(unsigned long period) {
+    if (period < 1) {
+        period = 1;
+    }
+
+    // Calculate how far through the current period we are and modify the offset
+    // to keep the current value
+    // Take into account the current offset too
+    _period = period;
+    _init_cycle();
+}
+
+// Set the progress through the period of the cycle
 //
-// Class this once each time around the main arduino loop
-void Cycler::update(void (*min_callback)()=NULL, void (*max_callback)()=NULL){
+// Value ranges from 0 to 1 as a float
+void Cycler::set_progress(float progress) {
+    if (progress < 0) {
+        progress = 0;
+    }
+    if (progress > 1) {
+        progress = 1.0;
+    }
+    _milli_progress = progress * float(period);
+    _normalised_progress = progress;
+    _init_cycle();
+}
+
+// Set the progress through the period of the cycle
+//
+// Value ranges from 0 to period length
+void Cycler::set_progress(unsigned long progress) {
+    if (progress > period) {
+        progress = period;
+    }
+    _milli_progress = progress;
+    _normalised_progress = float(progress)/float(_period)
+    _init_cycle();
+}
+
+// Call this once each time around the main arduino loop
+void Cycler::update(void (*min_callback)()=NULL, void (*max_callback)()=NULL) {
     // Get how long it's been since the last update
     unsigned long current_time = millis();
     uint8_t elapsed_millis = current_time - _last_update;
@@ -80,204 +186,13 @@ void Cycler::update(void (*min_callback)()=NULL, void (*max_callback)()=NULL){
         }
     }
 }
-void set_min(float min);
-void set_max(float max);
-void set_speed(float speed);
-void set_period(unsigned long period);
-void set_min_now();
-void set_max_now();
 
+void Cycler::_update_sin(void (*min_callback)()=NULL, void (*max_callback)()=NULL);
+void Cycler::_update_sawtooth(void (*min_callback)()=NULL, void (*max_callback)()=NULL);
+void Cycler::_update_triangle(void (*min_callback)()=NULL, void (*max_callback)()=NULL);
+void Cycler::_update_square(void (*min_callback)()=NULL, void (*max_callback)()=NULL);
 
-
-
-
-(void (*min_callback)()=NULL, void (*max_callback)()=NULL){
-    // Get how long it's been since the last update
-    unsigned long current_time = millis();
-    uint8_t elapsed_millis = current_time - _last_update;
-
-    // If measurable time has passed
-    if (elapsed_millis > 0) {
-        // Store this read time
-        _last_update = current_time;
+void Cycler::_reconfigure() {
+    // Update offset to account for period changing
+    // Recalculate min/max milli marks for callback calculation in update
 }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-class Cycler {
-    public:
-        enum mode_t {
-            STATIC,
-            CYCLE_HUE,
-            PULSE_VALUE,
-            PULSE_VALUE_CHANGE_HUE,
-            PULSE_VALUE_CYCLE_HUE};
-
-    private:
-        // How much to increment _value by in value/millisecond
-        float _value_timebase_speed;
-
-        // The current value
-        float _value_timebase;
-
-        // How much to increment _hue by in hue/milllisecond
-        float _hue_speed;
-
-        // Current hue
-        float _hue;
-
-        // The offset for the hue
-        uint8_t _hue_offset;
-
-        // When the last update was
-        unsigned long _last_update;
-
-        // The current mode
-        mode_t _mode;
-
-        // Speed multiplier
-        float _speed_mult;
-
-    public:
-        Cycler() {
-            _value_timebase_speed = 0.1;
-            _value_timebase = 0;
-            _hue_speed = 0.1;
-            _hue = 0;
-            _hue_offset = 0;
-            _mode = STATIC;
-            _speed_mult = 1.0;
-        }
-
-        void init() {
-            _last_update = millis();
-        }
-
-        float wrap_255_float(float input) {
-            // Do a floating point modulo 0-255.999999...
-            int int_part = int(input);
-            float decimal_part = input - int_part;
-            int wrapped = int_part % 256;
-            float wrapped_float = wrapped + decimal_part;
-
-            return wrapped_float;
-        }
-
-        void set_mode(mode_t mode) {
-            _mode = mode;
-        }
-
-        uint8_t get_hue() {
-            return (uint8_t(_hue) + _hue_offset) % 256;
-        }
-
-        void set_hue(float hue) {
-            _hue = hue;
-        }
-
-        void set_hue_speed(float speed) {
-            _hue_speed = speed;
-        }
-
-        void set_hue_offset(uint8_t hue_offset) {
-            _hue_offset = hue_offset;
-        }
-
-        uint8_t get_value() {
-            return sin8(uint8_t(_value_timebase));
-        }
-
-        void set_value_timebase_speed(float speed) {
-            _value_timebase_speed = speed;
-        }
-
-        void set_value_timebase(float value_timebase) {
-            _value_timebase = wrap_255_float(value_timebase);
-        }
-
-        void update() {
-            // Get how long it's been since the last update
-            unsigned long current_time = millis();
-            uint8_t elapsed_millis = current_time - _last_update;
-
-            // If measurable time has passed
-            if (elapsed_millis > 0) {
-                // Store this read time
-                _last_update = current_time;
-
-                // Update based on current_mode
-                switch (_mode) {
-                    case STATIC:
-                        update_static(elapsed_millis);
-                        break;
-                    case CYCLE_HUE:
-                        update_cycle_hue(elapsed_millis);
-                        break;
-                    case PULSE_VALUE:
-                        update_pulse_value(elapsed_millis);
-                        break;
-                    case PULSE_VALUE_CHANGE_HUE:
-                        update_pulse_value_change_hue(elapsed_millis);
-                        break;
-                    case PULSE_VALUE_CYCLE_HUE:
-                        update_pulse_value_change_hue(elapsed_millis);
-                        break;
-                }
-            }
-        }
-
-        void update_static(uint8_t elapsed_millis) {
-            // Nothing to do!
-        }
-
-        void update_cycle_hue(uint8_t elapsed_millis) {
-            float new_hue = _hue + (elapsed_millis * _hue_speed * _speed_mult);
-            _hue = wrap_255_float(new_hue);
-        }
-
-        void update_pulse_value(uint8_t elapsed_millis) {
-            float new_value_timebase = _value_timebase + (elapsed_millis * _value_timebase_speed * _speed_mult);
-            _value_timebase = wrap_255_float(new_value_timebase);
-        }
-
-        void update_pulse_value_change_hue(uint8_t elapsed_millis) {
-            uint8_t _previous_value = get_value();
-            update_pulse_value(elapsed_millis);
-            // When it goes from above the threshold to below it
-            if ((_previous_value >= HUE_CHANGE_THRESHOLD) && (get_value() < HUE_CHANGE_THRESHOLD)) {
-                _hue = float(random8());
-            }
-        }
-        void update_pulse_value_cycle_hue(uint8_t elapsed_millis) {
-            update_pulse_value(elapsed_millis);
-            update_cycle_hue(elapsed_millis);
-        }
-};

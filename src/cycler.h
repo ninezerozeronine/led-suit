@@ -28,20 +28,28 @@ class Cycler {
         void set_min(float min);
         void set_max(float max);
         void set_period(unsigned long period);
-        void set_min_now();
-        void set_max_now();
-        void set_progress(unsigned long progress);
-
+        // void set_progress(float progress);
+        // void set_progress(unsigned long progress);
+        void start_period_now();
 
     private:
         // How long it takes to get to the same point in the cycle in milliseconds
         unsigned long _period;
 
         // How far through the period we are in milliseconds
-        unsigned long _progress;
+        // unsigned long _milli_progress;
 
-        // The current value of the cycler
-        float _value;
+        // The offset from 0 for when the period starts
+        unsigned long _milli_offset;
+
+        // The progress through the period normalised between 0 and 1;
+        // float _normalised_progress;
+
+        // Progress through the period in millis last update
+        unsigned long _last_milli_progress;
+
+        // The last value of the cycler
+        // float _last_value;
 
         // The max value of the cycler
         float _max;
@@ -58,6 +66,9 @@ class Cycler {
         // The duty or ratio of on to off when in SQUARE cycle mode
         float _duty;
 
+        // Reconfigure the cycler when period or duty changes
+        void _reconfigure();
+
         // Update various modes
         void _update_sin(void (*min_callback)()=NULL, void (*max_callback)()=NULL);
         void _update_sawtooth(void (*min_callback)()=NULL, void (*max_callback)()=NULL);
@@ -65,11 +76,20 @@ class Cycler {
         void _update_square(void (*min_callback)()=NULL, void (*max_callback)()=NULL);
 
         // Setup when entering different cycle modes
-        void _setup_SIN_cycle();
-        void _setup_SAWTOOTH_cycle();
-        void _setup_TRIANGLE_cycle();
-        void _setup_SQUARE_cycle();
+        // void _init_cycle();
+        // void _init_STATIC_cycle();
+        // void _init_SIN_cycle();
+        // void _init_SAWTOOTH_cycle();
+        // void _init_TRIANGLE_cycle();
+        // void _init_SQUARE_cycle();
 
+        // Setup when entering different cycle modes
+        void _calculate_cycle();
+        void _calculate_STATIC_cycle();
+        void _calculate_SIN_cycle();
+        void _calculate_SAWTOOTH_cycle();
+        void _calculate_TRIANGLE_cycle();
+        void _calculate_SQUARE_cycle();
 
         // Calculate speed based on period
         void _calculate_speed();
