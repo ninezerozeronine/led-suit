@@ -40,18 +40,19 @@ void Cycler::set_cycle_mode(mode_t cycle_mode) {
 float Cycler::get_value() {
     switch (_cycle_mode) {
         case STATIC:
-            _calculate_STATIC();
+            _value = _calculate_STATIC();
             break;
         case SIN:
-            _calculate_SIN();
+            _value = _calculate_SIN();
             break;
         case TRIANGLE:
-            _calculate_TRIANGLE();
+            _value = _calculate_TRIANGLE();
             break;
         case SQUARE:
-            _calculate_SQUARE();
+            _value = _calculate_SQUARE();
             break;
     }
+    return _value;
 }
 
 float Cycler::_calculate_STATIC() {
@@ -63,7 +64,16 @@ float Cycler::_calculate_SIN() {
 }
 
 float Cycler::_calculate_TRIANGLE() {
-// Lerp formula = ((1-t) * A) + (t * b)
+    float ret;
+    float progress = _calculate_normalised_progress();
+    if (progress < _duty) {
+        float rise_progress = progress / _duty;
+        ret = ((1.0 - rise_progress) * _min) + (rise_progress * _max);
+    } else {
+        float fall_progress = (progress - _duty) / (1.0 - _duty);
+        ret = ((1.0 - fall_progress) * _max) + (fall_progress * _min);
+    }
+    return ret;
 }
 
 float Cycler::_calculate_SQUARE() {
@@ -88,6 +98,13 @@ void Cycler::set_max(float max) {
 }
 
 void Cycler::set_duty(float duty) {
+    if (duty < 0) {
+        duty = 0.0;
+    }
+    if (duty > 1) {
+        duty = 1.0;
+    }
+    _duty = duty;
     _callbacks_invalidated = true;
 }
 
@@ -164,7 +181,21 @@ void Cycler::_update_SIN(void (*min_callback)(), void (*max_callback)()) {
 }
 
 void Cycler::_update_TRIANGLE(void (*min_callback)(), void (*max_callback)()) {
+    // If the normalised progress has decreased, then the period has reset so we hit a min
+    if (min_callback != NULL) {
+        float current_normalised_progress = _calculate_normalised_progress();
+        if (current_normalised_progress < _last_normalised_progress) {
+            min_callback();
+        }
+    }
 
+    // If the normalised progress has gone from less than to greater than the duty we hit a max
+    if (max_callback != NULL) {
+        float current_normalised_progress = _calculate_normalised_progress();
+        if (_last_normalised_progress <= _duty && current_normalised_progress > _duty) {
+            max_callback();
+        }
+    }
 }
 
 void Cycler::_update_SQUARE(void (*min_callback)(), void (*max_callback)()) {
@@ -179,8 +210,8 @@ void Cycler::_update_SQUARE(void (*min_callback)(), void (*max_callback)()) {
     // If the normalised progress has gone from less than to greater than the duty we hit a min
     if (min_callback != NULL) {
         float current_normalised_progress = _calculate_normalised_progress();
-        if (_last_normalised_progress < _duty && current_normalised_progress > _duty) {
-            max_callback();
+        if (_last_normalised_progress <= _duty && current_normalised_progress > _duty) {
+            min_callback();
         }
     }
 }
