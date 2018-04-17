@@ -11,7 +11,7 @@ class Cycler {
         enum mode_t {
             STATIC,
             SIN,
-            SAWTOOTH,
+            // SAWTOOTH,
             TRIANGLE,
             SQUARE
         };
@@ -27,7 +27,7 @@ class Cycler {
         void update(void (*min_callback)()=NULL, void (*max_callback)()=NULL);
         void set_min(float min);
         void set_max(float max);
-        void set_period(unsigned long period);
+        void set_period(unsigned long period, bool maintain_progress=false);
         // void set_progress(float progress);
         // void set_progress(unsigned long progress);
         void start_period_now();
@@ -66,14 +66,24 @@ class Cycler {
         // The duty or ratio of on to off when in SQUARE cycle mode
         float _duty;
 
+        // Whetehr the callbacks have been invalidated by changing duty or period
+        bool _callbacks_invalidated;
+
         // Reconfigure the cycler when period or duty changes
-        void _reconfigure();
+        // void _reconfigure();
 
         // Update various modes
         void _update_sin(void (*min_callback)()=NULL, void (*max_callback)()=NULL);
         void _update_sawtooth(void (*min_callback)()=NULL, void (*max_callback)()=NULL);
-        void _update_triangle(void (*min_callback)()=NULL, void (*max_callback)()=NULL);
+        // void _update_triangle(void (*min_callback)()=NULL, void (*max_callback)()=NULL);
         void _update_square(void (*min_callback)()=NULL, void (*max_callback)()=NULL);
+
+        // Setup when entering different cycle modes
+        void _set_cycle_mode_STATIC();
+        void _set_cycle_mode_SIN();
+        //void _set_cycle_mode_SAWTOOTH();
+        void _set_cycle_mode_TRIANGLE();
+        void _set_cycle_mode_SQUARE();
 
         // Setup when entering different cycle modes
         // void _init_cycle();
@@ -87,12 +97,12 @@ class Cycler {
         void _calculate_cycle();
         void _calculate_STATIC_cycle();
         void _calculate_SIN_cycle();
-        void _calculate_SAWTOOTH_cycle();
+        // void _calculate_SAWTOOTH_cycle();
         void _calculate_TRIANGLE_cycle();
         void _calculate_SQUARE_cycle();
 
         // Calculate speed based on period
-        void _calculate_speed();
+        // void _calculate_speed();
 };
 
 #endif
