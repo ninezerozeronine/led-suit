@@ -1,24 +1,27 @@
 // Class to handle values that cycle over time
-// Lerp formula = ((1-t) * A) + (t * b)
 #include "cycler.h"
 
 // Constructor
-Cycler::Cycler(period=1000, min=0.0, max=255.0, cycle_mode=STATIC) {
+Cycler::Cycler(
+            unsigned long period,
+            float min,
+            float max,
+            mode_t cycle_mode,
+            float duty
+) {
     if (period < 1) {
         period = 1;
     }
     _period = period;
     _min = min;
     _max = max;
-    // _last_value = _min;
+    _value = min;
     _cycle_mode = cycle_mode;
-    _duty = 0.5;
-    _milli_progress = 0;
-    _last_update = 0;
-    //_last_milli_progress = 0;
+    _duty = duty;
+    _last_update_time = 0;
+    _milli_offset = 0;
     _last_normalised_progress = 0.0;
     _callbacks_invalidated = false;
-    _set_cycle_mode(_cycle_mode);
 }
 
 
@@ -26,14 +29,10 @@ Cycler::Cycler(period=1000, min=0.0, max=255.0, cycle_mode=STATIC) {
 //
 // Call this outside the constructor so caller has control when it runs
 void Cycler::init() {
-    _last_update = milis();
+    _last_update_time = millis();
 }
 
-void Cycler::set_cycle_mode(cycle_t cycle_mode) {
-    _cycle_mode = cycle_mode;
-}
-
-void Cycler::set_period(cycle_t cycle_mode) {
+void Cycler::set_cycle_mode(mode_t cycle_mode) {
     _cycle_mode = cycle_mode;
 }
 
@@ -55,14 +54,27 @@ float Cycler::get_value() {
     }
 }
 
-float _calculate_STATIC() {
+float Cycler::_calculate_STATIC() {
     return _value;
 }
-void _calculate_SIN();
-void _calculate_SAWTOOTH();
-void _calculate_TRIANGLE();
-float _calculate_SQUARE() {
-    unsigned long timebase = millis() + offset;
+
+float Cycler::_calculate_SIN() {
+
+}
+
+float Cycler::_calculate_TRIANGLE() {
+// Lerp formula = ((1-t) * A) + (t * b)
+}
+
+float Cycler::_calculate_SQUARE() {
+    float progress = _calculate_normalised_progress();
+    float val;
+    if (progress > _duty) {
+        val = _max;
+    } else {
+        val = _min;
+    }
+    return val;
 }
 
 // Set the minimum value that the cycler will reach
@@ -79,20 +91,19 @@ void Cycler::set_duty(float duty) {
     _callbacks_invalidated = true;
 }
 
-
-void Cycler::start_period_now(){
+void Cycler::start_period_now() {
     _callbacks_invalidated = true;
 }
 
 // Set the period of the cycler
-void Cycler::set_period(unsigned long period, bool maintain_progress=false) {
+void Cycler::set_period(unsigned long period, bool maintain_progress) {
     if (period < 1) {
         period = 1;
     }
 
     if (maintain_progress) {
         // How far through the current period are we right now
-        unsigned long current_time = millis()
+        unsigned long current_time = millis();
         unsigned long cycler_time = current_time + _milli_offset;
         unsigned long old_period_time = cycler_time % _period;
         float period_progress = float(old_period_time)/float(_period);
@@ -107,7 +118,7 @@ void Cycler::set_period(unsigned long period, bool maintain_progress=false) {
             new_offset += period;
         }
 
-        _milli_offset = unsigned long(new_offset);
+        _milli_offset = new_offset;
     }
 
     _period = period;
@@ -115,27 +126,27 @@ void Cycler::set_period(unsigned long period, bool maintain_progress=false) {
 }
 
 // Call this once each time around the main arduino loop
-void Cycler::update(void (*min_callback)()=NULL, void (*max_callback)()=NULL) {
+void Cycler::update(void (*min_callback)(), void (*max_callback)()) {
     // Get how long it's been since the last update
     unsigned long current_time = millis();
-    uint8_t elapsed_millis = current_time - _last_update;
+    uint8_t elapsed_millis = current_time - _last_update_time;
 
     // If measurable time has passed
     if (elapsed_millis > 0) {
         if (!_callbacks_invalidated) {
-            // Update based on current_mode
-            switch (_mode) {
+            // Update based on current mode
+            switch (_cycle_mode) {
                 case STATIC:
                     // Nothing to do!
                     break;
                 case SIN:
-                    _update_sin(min_callback, max_callback);
+                    _update_SIN(min_callback, max_callback);
                     break;
                 case TRIANGLE:
-                    _update_triangle(min_callback, max_callback);
+                    _update_TRIANGLE(min_callback, max_callback);
                     break;
                 case SQUARE:
-                    _update_square(min_callback, max_callback);
+                    _update_SQUARE(min_callback, max_callback);
                     break; 
             }
         } else {
@@ -143,20 +154,20 @@ void Cycler::update(void (*min_callback)()=NULL, void (*max_callback)()=NULL) {
         }
 
         // Store current values for the next update
-        _last_update = current_time;
+        _last_update_time = current_time;
         _last_normalised_progress = _calculate_normalised_progress();
     }
 }
 
-void Cycler::_update_sin(void (*min_callback)()=NULL, void (*max_callback)()=NULL) {
-
-}
-// void Cycler::_update_sawtooth(void (*min_callback)()=NULL, void (*max_callback)()=NULL);
-void Cycler::_update_triangle(void (*min_callback)()=NULL, void (*max_callback)()=NULL) {
+void Cycler::_update_SIN(void (*min_callback)(), void (*max_callback)()) {
 
 }
 
-void Cycler::_update_square(void (*min_callback)()=NULL, void (*max_callback)()=NULL) {
+void Cycler::_update_TRIANGLE(void (*min_callback)(), void (*max_callback)()) {
+
+}
+
+void Cycler::_update_SQUARE(void (*min_callback)(), void (*max_callback)()) {
     // If the normalised progress has decreased, then the period has reset so we hit a max
     if (max_callback != NULL) {
         float current_normalised_progress = _calculate_normalised_progress();
@@ -172,4 +183,12 @@ void Cycler::_update_square(void (*min_callback)()=NULL, void (*max_callback)()=
             max_callback();
         }
     }
+}
+
+float Cycler::_calculate_normalised_progress() {
+        unsigned long current_time = millis();
+        unsigned long cycler_time = current_time + _milli_offset;
+        unsigned long period_time = cycler_time % _period;
+        float period_progress = float(period_time)/float(_period);
+        return period_progress;
 }
