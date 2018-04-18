@@ -8,6 +8,14 @@
 
 class Cycler {
     public:
+        // The different modes of the cycler:
+        // Static doesn't change over time
+        // SIN is a sin wave with highest and lowest values of min and max
+        // TRIANGLE is a wave that is min at the start and end of the period and
+        //          max at a point duty*period through the period and
+        //          linearly interpolates in between.
+        // SQUARE has a value of max from the start of the period up until duty*period
+        //        where it then goes straigt to min.
         enum mode_t {
             STATIC,
             SIN,
@@ -31,6 +39,7 @@ class Cycler {
         void set_duty(float duty);
         void set_period(unsigned long period, bool maintain_progress=false);
         void start_period_now();
+        void set_offset(unsigned long offset);
 
     private:
         // How long it takes to get to the same point in the cycle in milliseconds

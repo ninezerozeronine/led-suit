@@ -30,72 +30,26 @@ Cycler::Cycler(
 // Call this outside the constructor so caller has control when it runs
 void Cycler::init() {
     _last_update_time = millis();
+    _last_normalised_progress = _calculate_normalised_progress();
 }
+
 
 void Cycler::set_cycle_mode(mode_t cycle_mode) {
     _cycle_mode = cycle_mode;
 }
 
-// Get the current value of the cycler
-float Cycler::get_value() {
-    switch (_cycle_mode) {
-        case STATIC:
-            _value = _calculate_STATIC();
-            break;
-        case SIN:
-            _value = _calculate_SIN();
-            break;
-        case TRIANGLE:
-            _value = _calculate_TRIANGLE();
-            break;
-        case SQUARE:
-            _value = _calculate_SQUARE();
-            break;
-    }
-    return _value;
-}
-
-float Cycler::_calculate_STATIC() {
-    return _value;
-}
-
-float Cycler::_calculate_SIN() {
-
-}
-
-float Cycler::_calculate_TRIANGLE() {
-    float ret;
-    float progress = _calculate_normalised_progress();
-    if (progress < _duty) {
-        float rise_progress = progress / _duty;
-        ret = ((1.0 - rise_progress) * _min) + (rise_progress * _max);
-    } else {
-        float fall_progress = (progress - _duty) / (1.0 - _duty);
-        ret = ((1.0 - fall_progress) * _max) + (fall_progress * _min);
-    }
-    return ret;
-}
-
-float Cycler::_calculate_SQUARE() {
-    float progress = _calculate_normalised_progress();
-    float val;
-    if (progress > _duty) {
-        val = _max;
-    } else {
-        val = _min;
-    }
-    return val;
-}
 
 // Set the minimum value that the cycler will reach
 void Cycler::set_min(float min) {
     _min = min;
 }
 
+
 // Set the maximum value that the cycler will reach
 void Cycler::set_max(float max) {
     _max = max;
 }
+
 
 void Cycler::set_duty(float duty) {
     if (duty < 0) {
@@ -108,11 +62,20 @@ void Cycler::set_duty(float duty) {
     _callbacks_invalidated = true;
 }
 
+// Set the cycle to start at the current time
 void Cycler::start_period_now() {
     _callbacks_invalidated = true;
 }
 
+//
+void Cycler::set_offset(unsigned long offset){
+    _callbacks_invalidated = true;
+}
+
 // Set the period of the cycler
+//
+// maintain_progress means that the value of the cycler wont change. This
+// is achieved by setting the offset appropriately
 void Cycler::set_period(unsigned long period, bool maintain_progress) {
     if (period < 1) {
         period = 1;
@@ -142,7 +105,76 @@ void Cycler::set_period(unsigned long period, bool maintain_progress) {
     _callbacks_invalidated = true;
 }
 
+
+// Get the current value of the cycler
+float Cycler::get_value() {
+    switch (_cycle_mode) {
+        case STATIC:
+            _value = _calculate_STATIC();
+            break;
+        case SIN:
+            _value = _calculate_SIN();
+            break;
+        case TRIANGLE:
+            _value = _calculate_TRIANGLE();
+            break;
+        case SQUARE:
+            _value = _calculate_SQUARE();
+            break;
+    }
+    return _value;
+}
+
+
+float Cycler::_calculate_STATIC() {
+    return _value;
+}
+
+
+float Cycler::_calculate_SIN() {
+    float progress = _calculate_normalised_progress();
+    float radian_progress = progress * 6.2831853;
+    float cosine = cos(radian_progress);
+    float lerp_value = (cosine + 1.0) / 2.0;
+    float ret = ((1.0 - lerp_value) * _min) + (lerp_value * _max);
+    return ret;
+}
+
+
+float Cycler::_calculate_TRIANGLE() {
+    float ret;
+    float progress = _calculate_normalised_progress();
+    // Linearly interpolate beteen min and max based on how far between period
+    // start and duty*period we currently are
+    if (progress < _duty) {
+        float rise_progress = progress / _duty;
+        ret = ((1.0 - rise_progress) * _min) + (rise_progress * _max);
+
+    // Linearly interpolate beteen max and min based on how far between duty*period
+    // and the end of the period we currently are
+    } else {
+        float fall_progress = (progress - _duty) / (1.0 - _duty);
+        ret = ((1.0 - fall_progress) * _max) + (fall_progress * _min);
+    }
+    return ret;
+}
+
+
+float Cycler::_calculate_SQUARE() {
+    float progress = _calculate_normalised_progress();
+    float val;
+    if (progress > _duty) {
+        val = _max;
+    } else {
+        val = _min;
+    }
+    return val;
+}
+
+
 // Call this once each time around the main arduino loop
+//
+// min and max callbacks are called when the value hits a max or a min.
 void Cycler::update(void (*min_callback)(), void (*max_callback)()) {
     // Get how long it's been since the last update
     unsigned long current_time = millis();
@@ -176,9 +208,25 @@ void Cycler::update(void (*min_callback)(), void (*max_callback)()) {
     }
 }
 
-void Cycler::_update_SIN(void (*min_callback)(), void (*max_callback)()) {
 
+void Cycler::_update_SIN(void (*min_callback)(), void (*max_callback)()) {
+    // If the normalised progress has decreased, then the period has reset so we hit a max
+    if (max_callback != NULL) {
+        float current_normalised_progress = _calculate_normalised_progress();
+        if (current_normalised_progress < _last_normalised_progress) {
+            max_callback();
+        }
+    }
+
+    // If the normalised progress has gone from less than to greater than the duty we hit a min
+    if (min_callback != NULL) {
+        float current_normalised_progress = _calculate_normalised_progress();
+        if (_last_normalised_progress <= 0.5 && current_normalised_progress > 0.5) {
+            min_callback();
+        }
+    }
 }
+
 
 void Cycler::_update_TRIANGLE(void (*min_callback)(), void (*max_callback)()) {
     // If the normalised progress has decreased, then the period has reset so we hit a min
@@ -198,6 +246,7 @@ void Cycler::_update_TRIANGLE(void (*min_callback)(), void (*max_callback)()) {
     }
 }
 
+
 void Cycler::_update_SQUARE(void (*min_callback)(), void (*max_callback)()) {
     // If the normalised progress has decreased, then the period has reset so we hit a max
     if (max_callback != NULL) {
@@ -215,6 +264,7 @@ void Cycler::_update_SQUARE(void (*min_callback)(), void (*max_callback)()) {
         }
     }
 }
+
 
 float Cycler::_calculate_normalised_progress() {
         unsigned long current_time = millis();
