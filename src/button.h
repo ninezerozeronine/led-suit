@@ -7,9 +7,9 @@
 
 class Button {
     public:
-        Button(uint8_t pin, uint8_t debounce_time, void (*low_to_high_callback)()=NULL, void (*high_to_low_callback)()=NULL);
+        Button(uint8_t pin, uint8_t debounce_time);
         void init();
-        void update();
+        void update(void (*low_to_high_callback)()=NULL, void (*high_to_low_callback)()=NULL);
 
     private:
         // The pin this button is connected to
@@ -26,12 +26,6 @@ class Button {
     
         // When the button last transitioned from low to high (without bouncing)
         unsigned long _last_state_change;
-
-        // Callback for when the button is pressed
-        void (*_low_to_high_callback)();
-
-        // Callback for when the button is released
-        void (*_high_to_low_callback)();
 };
 
 #endif

@@ -10,14 +10,12 @@
 // debounce_time - the number of miliseconds for the button to be in it's new state before considering it pressed
 // low_to_high_callback - the callback to call when the button goes from unpressed to pressed
 // high_to_low_callback - the callback to call when the button goes from pressed to unpressed
-Button::Button(uint8_t pin, uint8_t debounce_time, void (*low_to_high_callback)()=NULL, void (*high_to_low_callback)()=NULL) {
+Button::Button(uint8_t pin, uint8_t debounce_time) {
     _pin = pin;
     _debounce_time = debounce_time;
     _is_pressed = false;
     _last_state = HIGH;
     _last_state_change = 0;
-    _low_to_high_callback = low_to_high_callback;
-    _high_to_low_callback = high_to_low_callback;
 }
 
 // Set up button ready for use.
@@ -28,7 +26,7 @@ void Button::init() {
 }
 
 // Update the button each time round the main loop
-void Button::update() {
+void Button::update(void (*low_to_high_callback)()=NULL, void (*high_to_low_callback)()=NULL) {
     // Read state of the button (invert because we're using INPUTPULLUP)
     int current_state = !digitalRead(_pin);
 
@@ -46,12 +44,12 @@ void Button::update() {
             if (current_time - _last_state_change > _debounce_time) {
                 _is_pressed = current_state;
                 if (current_state == HIGH) {
-                    if (_low_to_high_callback != NULL) {
-                        _low_to_high_callback();
+                    if (low_to_high_callback != NULL) {
+                        low_to_high_callback();
                     }
                 } else {
-                    if (_high_to_low_callback != NULL) {
-                        _high_to_low_callback();
+                    if (high_to_low_callback != NULL) {
+                        high_to_low_callback();
                     }
                 }
             }

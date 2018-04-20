@@ -11,9 +11,7 @@ void button_released(){
 }
 
 int BUTTON_PIN = 2;
-Button button(BUTTON_PIN, 10, &button_pressed, &button_released);
-// Button button(BUTTON_PIN, 10, &button_pressed);
-
+Button button(BUTTON_PIN, 10);
 
 void setup() {
     // put your setup code here, to run once:
@@ -23,5 +21,5 @@ void setup() {
 
 void loop() {
     // put your main code here, to run repeatedly:
-    button.update();
+    button.update(&button_pressed, &button_released);
 }

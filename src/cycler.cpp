@@ -3,7 +3,7 @@
 
 // Constructor
 Cycler::Cycler(
-            unsigned long period,
+            uint16_t period,
             float min,
             float max,
             mode_t cycle_mode,
@@ -68,7 +68,8 @@ void Cycler::start_period_now() {
 }
 
 //
-void Cycler::set_offset(unsigned long offset){
+void Cycler::set_offset(uint16_t offset){
+    _milli_offset = offset;
     _callbacks_invalidated = true;
 }
 
@@ -76,7 +77,7 @@ void Cycler::set_offset(unsigned long offset){
 //
 // maintain_progress means that the value of the cycler wont change. This
 // is achieved by setting the offset appropriately
-void Cycler::set_period(unsigned long period, bool maintain_progress) {
+void Cycler::set_period(uint16_t period, bool maintain_progress) {
     if (period < 1) {
         period = 1;
     }
@@ -163,7 +164,7 @@ float Cycler::_calculate_TRIANGLE() {
 float Cycler::_calculate_SQUARE() {
     float progress = _calculate_normalised_progress();
     float val;
-    if (progress > _duty) {
+    if (progress < _duty) {
         val = _max;
     } else {
         val = _min;
@@ -221,7 +222,7 @@ void Cycler::_update_SIN(void (*min_callback)(), void (*max_callback)()) {
     // If the normalised progress has gone from less than to greater than the duty we hit a min
     if (min_callback != NULL) {
         float current_normalised_progress = _calculate_normalised_progress();
-        if (_last_normalised_progress <= 0.5 && current_normalised_progress > 0.5) {
+        if ((_last_normalised_progress <= 0.5) && (current_normalised_progress > 0.5)) {
             min_callback();
         }
     }
