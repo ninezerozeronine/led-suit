@@ -1,11 +1,11 @@
 #include "potentiometer.h"
 #include "Arduino.h"
 
-void print_change(uint8_t new_val){
+void print_change(uint16_t new_val){
     Serial.println(new_val);
 }
 
-Potentiometer pot(A1, 10, &print_change);
+Potentiometer pot(A1);
 
 void setup() {
     // put your setup code here, to run once:
@@ -15,5 +15,5 @@ void setup() {
 
 void loop() {
     // put your main code here, to run repeatedly:
-     pot.update();
+    pot.update(&print_change);
 }

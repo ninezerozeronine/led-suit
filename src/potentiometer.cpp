@@ -10,15 +10,14 @@
 // pin - The pin the potentiometer is reading from
 // update_period - How long to wait in milliseconds before re-reading the potentiometer value
 // callback - the function to call when the value of the potentiometer changes
-Potentiometer::Potentiometer(
-    uint8_t pin,
-    uint8_t update_period,
-    void (*callback)(uint8_t))
-    {
+Potentiometer::Potentiometer(uint8_t pin, uint8_t update_period) {
     _pin = pin;
     _update_period = update_period;
-    _callback = callback;
     _last_update = 0;
+    _newest_reading_index = NUM_READINGS - 1;
+    for (uint8_t index = 0; index < NUM_READINGS; ++index) {
+        _last_readings[index] = 0;
+    }
 }
 
 // Initialise the object
@@ -26,53 +25,60 @@ Potentiometer::Potentiometer(
 // Don't do this in the constructor so we're in control
 void Potentiometer::init() {
     pinMode(_pin, INPUT);
-    _value = de_log_and_map(analogRead(_pin));
+    _value = analogRead(_pin);
     _last_update = millis();
-
-}
-
-// Get the current value of the potentiometer
-uint8_t Potentiometer::get_value() {
-    return _value;
-}
-
-// Need to do this de-logging because I bought logarithmic rather than 
-// linear potentiometers :(
-uint8_t Potentiometer::de_log_and_map(uint16_t input) {
-    uint8_t result = 0;
-    if (input <= 150) {
-        result = map(input, 0, 150, 0, 128);
-    } else {
-        result = map(input, 151, 1023, 129, 255);
+    for (uint8_t index = 0; index < NUM_READINGS; ++index) {
+        _last_readings[index] = _value;
     }
-    return result;
+}
+
+// Get the last read value of the potentiometer
+uint16_t Potentiometer::get_value(bool un_log) {
+    uint16_t ret = _value;
+    if (un_log) {
+        if (_value <= 150) {
+            ret = map(_value, 0, 150, 0, 511);
+        } else {
+            ret = map(_value, 151, 1023, 512, 1023);
+        }
+    }
+    return ret;
 }
 
 // Update the potentiometer
 //
 // To be called once every time the main loop runs
-void Potentiometer::update() {
+void Potentiometer::update(void (*val_change_callback)(uint16_t)) {
     // Get current time
     unsigned long current_time = millis();
 
     // If it's time to re-read the pot
     if (current_time - _last_update > _update_period) {
-        // Store this read time
+
+        // Store this update time
         _last_update = current_time;
 
-        // Get the current value
-        uint8_t test_val = de_log_and_map(analogRead(_pin));
+        // Store the current value
+        uint16_t _value = analogRead(_pin);
 
-        // Need to do this because the output is really noisy :(
-        signed char diff = test_val - _value;
-        if (abs(diff) > 2) {
-            // Store it
-            _value = test_val;
+        // Average all the last readings
+        uint16_t average = 0;
+        for (uint8_t index = 0; index < NUM_READINGS; ++index) {
+            average += _last_readings[index] = 0;
+        }
+        average = average / NUM_READINGS;
 
-            // Call the callback
-            if (_callback != NULL) {
-                _callback(_value);
+        // Call the callback if the value changed
+        if (_value != average) {
+            if (val_change_callback != NULL) {
+                val_change_callback(_value);
             }
         }
+
+        // Move the readings pointer along one, wrapping if needed
+        uint8_t _newest_reading_index = (_newest_reading_index + 1) % NUM_READINGS;
+
+        // Store the last value
+        _last_readings[_newest_reading_index] = _value;
     }
 }

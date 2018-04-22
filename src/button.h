@@ -7,7 +7,7 @@
 
 class Button {
     public:
-        Button(uint8_t pin, uint8_t debounce_time);
+        Button(uint8_t pin, uint8_t debounce_time=10);
         void init();
         void update(void (*low_to_high_callback)()=NULL, void (*high_to_low_callback)()=NULL);
 

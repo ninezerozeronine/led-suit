@@ -5,33 +5,33 @@
 
 #include "Arduino.h"
 
+#define NUM_READINGS 5
+
 class Potentiometer {
     public:
-        Potentiometer(
-            uint8_t pin,
-            uint8_t update_period,
-            void (*callback)(uint8_t)
-        );
+        Potentiometer(uint8_t pin, uint8_t update_period=10);
         void init();
-        uint8_t get_value();
-        uint8_t de_log_and_map(uint16_t input);
-        void update();
+        uint16_t get_value(bool un_log=false);
+        void update(void (*val_change_callback)(uint16_t)=NULL);
 
     private:
+        // Index of the most recent reading
+        uint8_t _newest_reading_index;
+
+        // The last few readings to smooth out noise
+        uint16_t _last_readings[NUM_READINGS];
+
         // The pin this potentiometer is reading from
         uint8_t _pin;
 
-        // The remapped value of the potentiometer
-        uint8_t _value;
+        // The value of the potentiometer
+        uint16_t _value;
 
         // How many millisecods to wait between updates
         uint8_t _update_period;
 
         // When the last update was
         unsigned long _last_update;
-
-        // Callback for when the value changes
-        void (*_callback)(uint8_t);
 };
 
 #endif

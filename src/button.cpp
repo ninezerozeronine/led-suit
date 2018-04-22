@@ -26,8 +26,8 @@ void Button::init() {
 }
 
 // Update the button each time round the main loop
-void Button::update(void (*low_to_high_callback)()=NULL, void (*high_to_low_callback)()=NULL) {
-    // Read state of the button (invert because we're using INPUTPULLUP)
+void Button::update(void (*low_to_high_callback)(), void (*high_to_low_callback)()) {
+    // Read state of the button (invert because we're using INPUT_PULLUP)
     int current_state = !digitalRead(_pin);
 
     // If the button is in a different state to the current pressed state

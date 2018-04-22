@@ -17,7 +17,7 @@ void TapTempo::tap() {
 }
 
 uint16_t TapTempo::get_period() {
-    uint8_t oldest_tap_index = (_newest_tap_index + 1) % 5;
+    uint8_t oldest_tap_index = (_newest_tap_index + 1) % NUM_TAPS;
     uint16_t tap_span = _tap_times[_newest_tap_index] - _tap_times[oldest_tap_index];
     uint16_t average_tap_gap = tap_span / (NUM_TAPS - 1);
     return average_tap_gap;
