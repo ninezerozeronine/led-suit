@@ -10,7 +10,9 @@ class Cycler {
     public:
         // The different modes of the cycler:
         // Static doesn't change over time
-        // SIN is a sin wave with highest and lowest values of min and max
+        // TRIG is a trigonometric (e.g. sin/cos) wave with highest and lowest values
+        //      of min and max. Minimums occur at the start and end of the period, 
+        //      maximums occur half way through.
         // TRIANGLE is a wave that is min at the start and end of the period and
         //          max at a point duty*period through the period and
         //          linearly interpolates in between.
@@ -18,7 +20,7 @@ class Cycler {
         //        where it then goes straigt to min.
         enum mode_t {
             STATIC,
-            SIN,
+            TRIG,
             TRIANGLE,
             SQUARE
         };
@@ -33,20 +35,29 @@ class Cycler {
         void init();
         void set_cycle_mode(mode_t cycle_mode);
         float get_value();
+        uint16_t _get_gradual_value(uint16_t current, uint16_t target, uint8_t rate, uint8_t timespan);
         void update(void (*min_callback)()=NULL, void (*max_callback)()=NULL);
         void set_min(float min);
         void set_max(float max);
         void set_duty(float duty);
         void set_period(uint16_t period, bool maintain_progress=false);
-        void start_period_now();
+        uint16_t get_period();
         void set_offset(uint16_t offset);
+        void set_target_period(uint16_t target_period);
+        void set_target_offset(uint16_t tagret_offset);
 
     private:
         // How long it takes to get to the same point in the cycle in milliseconds
         uint16_t _period;
 
+        // The target period to migrate to
+        uint16_t _target_period;
+
         // The offset from 0 for when the period starts
-        uint16_t _milli_offset;
+        uint16_t _offset;
+
+        // The target offset to migrate to
+        uint16_t _target_offset;
 
         // The last updates progress through the period normalised between 0 and 1
         float _last_normalised_progress;
@@ -66,6 +77,9 @@ class Cycler {
         // When the cycler was last updated
         unsigned long _last_update_time;
 
+        // When the cycler last made a gradual change
+        unsigned long _last_gradual_time;
+
         // The duty or ratio of on to off when in SQUARE or TRIANGLE scycle mode
         float _duty;
 
@@ -76,15 +90,17 @@ class Cycler {
         float _calculate_normalised_progress();
 
         // Update various modes
-        void _update_SIN(void (*min_callback)()=NULL, void (*max_callback)()=NULL);
+        void _update_TRIG(void (*min_callback)()=NULL, void (*max_callback)()=NULL);
         void _update_TRIANGLE(void (*min_callback)()=NULL, void (*max_callback)()=NULL);
         void _update_SQUARE(void (*min_callback)()=NULL, void (*max_callback)()=NULL);
 
         // Setup when entering different cycle modes
         float _calculate_STATIC();
-        float _calculate_SIN();
+        float _calculate_TRIG();
         float _calculate_TRIANGLE();
         float _calculate_SQUARE();
+
+        void _update_graduals();
 };
 
 #endif
