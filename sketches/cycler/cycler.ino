@@ -83,10 +83,10 @@ void cycle_types_setup() {
     cycler3.init();
     cycler4.init();
 
-    cycler1.set_period(5000);
-    cycler2.set_period(5000);
-    cycler3.set_period(5000);
-    cycler4.set_period(5000);
+    cycler1.set_period_immediate(5000);
+    cycler2.set_period_immediate(5000);
+    cycler3.set_period_immediate(5000);
+    cycler4.set_period_immediate(5000);
 
     cycler1.set_cycle_mode(Cycler::STATIC);
     cycler2.set_cycle_mode(Cycler::SQUARE);
@@ -120,7 +120,7 @@ void change_period_detect_minmax_loop() {
     unsigned long current_millis = millis();
 
     if (current_millis - last_period_change > 5000) {
-        cycler1.set_period(random(500, 2500), true);
+        cycler1.set_period_immediate(random(500, 2500), true);
         last_period_change = current_millis;
     }
 
@@ -133,11 +133,11 @@ void change_period_detect_minmax_loop() {
 void gradual_offset_setup() {
     cycler1.init();
     cycler1.set_cycle_mode(Cycler::TRIG);
-    cycler1.set_period(1000);
+    cycler1.set_period_immediate(1000);
 
     cycler2.init();
     cycler2.set_cycle_mode(Cycler::TRIG);
-    cycler2.set_period(1000);
+    cycler2.set_period_immediate(1000);
 }
 
 void gradual_offset_loop() {
@@ -151,9 +151,8 @@ void gradual_offset_loop() {
     if (current_millis - last_offset_change > 10000) {
         bool gradual = true;
         uint16_t new_offset = random(0,1000);
-        cycler1.set_offset(new_offset);
-        cycler1.set_target_offset(new_offset);
-        cycler2.set_target_offset(new_offset);
+        cycler1.set_offset_immediate(new_offset);
+        cycler2.set_offset_gradual(new_offset);
         last_offset_change = current_millis;
     }
 
@@ -170,11 +169,11 @@ void gradual_offset_loop() {
 void gradual_period_setup() {
     cycler1.init();
     cycler1.set_cycle_mode(Cycler::TRIG);
-    cycler1.set_period(1000);
+    cycler1.set_period_immediate(1000);
 
     cycler2.init();
     cycler2.set_cycle_mode(Cycler::TRIG);
-    cycler2.set_period(1000);
+    cycler2.set_period_immediate(1000);
 }
 
 void gradual_period_loop() {
@@ -189,9 +188,8 @@ void gradual_period_loop() {
         bool maintain_progress = false;
         bool gradual = true;
         uint16_t new_period = random(500,5000);
-        cycler1.set_period(new_period);
-        cycler1.set_target_period(new_period);
-        cycler2.set_target_period(new_period);
+        cycler1.set_period_immediate(new_period);
+        cycler2.set_period_gradual(new_period);
         last_period_change = current_millis;
     }
 
@@ -205,55 +203,91 @@ void gradual_period_loop() {
     }
 }
 
+void gradual_period_and_offset_setup() {
+    cycler1.init();
+    cycler1.set_cycle_mode(Cycler::TRIG);
+    cycler1.set_period_immediate(1000);
+
+    cycler2.init();
+    cycler2.set_cycle_mode(Cycler::TRIG);
+    cycler2.set_period_immediate(1000);
+}
+
+void gradual_period_and_offset_loop() {
+    //cycler1.update(&min_reached, &max_reached);
+    cycler1.update();
+    // cycler2.update(NULL, &ticker);
+    cycler2.update();
+
+    unsigned long current_millis = millis();
+    if (current_millis - last_period_change > 10000) {
+        //Serial.println(350);
+        bool maintain_progress = false;
+        bool gradual = true;
+        uint16_t new_period = random(500,2000);
+        uint16_t new_offset = random(new_period);
+
+        cycler1.set_period_immediate(new_period);
+        cycler2.set_period_gradual(new_period);
+        cycler1.set_offset_immediate(new_offset);
+        cycler2.set_offset_gradual(new_offset);
+
+        last_period_change = current_millis;
+    }
+
+    if (current_millis - last_val_print > 10) {
+        Serial.print(cycler1.get_value());
+        // Serial.print(cycler1.get_period());
+        // Serial.print(cycler1.get_offset());
+        Serial.print(",");
+        Serial.println(cycler2.get_value());
+        // Serial.println(cycler2.get_period());
+        // Serial.println(cycler2.get_offset());
+        last_val_print = current_millis;
+    }
+}
+
+void offset_test_setup() {
+    cycler1.init();
+    cycler1.set_period_immediate(1000);
+    cycler1.set_cycle_mode(Cycler::SQUARE);
+    cycler1.set_duty(0.1);
+
+    cycler2.init();
+    cycler2.set_period_immediate(1000);
+    cycler2.set_offset_immediate(750);
+    cycler2.set_cycle_mode(Cycler::TRIANGLE);
+}
+
+void offset_test_loop() {
+    cycler1.update();
+    cycler2.update();
+
+    Serial.print(cycler1.get_value());
+    Serial.print(",");
+    Serial.println(cycler2.get_value());
+}
+
+
 void setup() {
     // put your setup code here, to run once:
 	// five_cyclers_setup();
 	// cycle_types_setup();
     // change_period_detect_minmax_setup();
-    gradual_offset_setup();
+    // gradual_offset_setup();
     // gradual_period_setup();
+    // gradual_period_and_offset_setup();
+    offset_test_setup();
     Serial.begin(9600);
 }
-
-    // cycler.set_cycle_mode(Cycler::SQUARE);
-    // cycler.set_duty(0.25);
 
 void loop() {
     // put your main code here, to run repeatedly:
     // five_cyclers_loop();
     // cycle_types_loop();
     // change_period_detect_minmax_loop();
-    gradual_offset_loop();
+    // gradual_offset_loop();
     // gradual_period_loop();
-
-    // if (millis() > 10000 && !changed) {
-    //     cycler.set_duty(0.25);
-    //     changed = true;
-    // }
-
-    // num++;
-    // if (num % 5000 == 0) {
-    //     Serial.println("---");
-    //     Serial.println(millis());
-    //     Serial.println("---");
-    // }
-
-    // if (millis() > 12345 && !changed) {
-    //     cycler1.set_period(3000, true);
-    //     changed = true;
-    // }
-
-
-
-    // if ((num + 5000) % 10000 == 0) {
-        
-    // }
-
-
-
-    // if (num % 50 == 0) {
-    //     Serial.println(cycler1.get_value());
-    // }
-
-    // num++;
+    // gradual_period_and_offset_loop();
+    offset_test_loop();
 }

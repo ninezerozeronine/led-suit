@@ -6,6 +6,9 @@
 #include <FastLED.h>
 #include <Arduino.h>
 
+#define GRADUAL_AMOUNT 10
+#define GRADUAL_INTERVAL 10
+
 class Cycler {
     public:
         // The different modes of the cycler:
@@ -35,18 +38,25 @@ class Cycler {
         void init();
         void set_cycle_mode(mode_t cycle_mode);
         float get_value();
-        uint16_t _get_gradual_value(uint16_t current, uint16_t target, uint8_t rate, uint8_t timespan);
         void update(void (*min_callback)()=NULL, void (*max_callback)()=NULL);
         void set_min(float min);
         void set_max(float max);
         void set_duty(float duty);
-        void set_period(uint16_t period, bool maintain_progress=false);
+
+        void set_period_immediate(uint16_t period, bool maintain_progress=false);
+        void set_period_gradual(uint16_t period);
         uint16_t get_period();
-        void set_offset(uint16_t offset);
-        void set_target_period(uint16_t target_period);
-        void set_target_offset(uint16_t tagret_offset);
+
+        void set_offset_immediate(uint16_t offset);
+        void set_offset_gradual(uint16_t offset);
+        uint16_t get_offset();
 
     private:
+        enum gradual_task_t {
+            OFFSET,
+            PERIOD
+        };
+
         // How long it takes to get to the same point in the cycle in milliseconds
         uint16_t _period;
 
@@ -80,6 +90,8 @@ class Cycler {
         // When the cycler last made a gradual change
         unsigned long _last_gradual_time;
 
+        gradual_task_t _gradual_task;
+
         // The duty or ratio of on to off when in SQUARE or TRIANGLE scycle mode
         float _duty;
 
@@ -101,6 +113,8 @@ class Cycler {
         float _calculate_SQUARE();
 
         void _update_graduals();
+        void _set_period(uint16_t period, bool maintain_progress=false, bool gradual_offset=false);
+        uint16_t _get_gradual_value(uint16_t current, uint16_t target);
 };
 
 #endif
