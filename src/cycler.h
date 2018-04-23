@@ -7,7 +7,7 @@
 #include <Arduino.h>
 
 #define GRADUAL_AMOUNT 10
-#define GRADUAL_INTERVAL 10
+#define GRADUAL_INTERVAL 5
 
 class Cycler {
     public:
@@ -114,7 +114,7 @@ class Cycler {
 
         void _update_graduals();
         void _set_period(uint16_t period, bool maintain_progress=false, bool gradual_offset=false);
-        uint16_t _get_gradual_value(uint16_t current, uint16_t target);
+        uint16_t _get_gradual_value(uint16_t current, uint16_t target, bool allow_wrap=false);
 };
 
 #endif

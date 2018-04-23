@@ -237,12 +237,17 @@ void gradual_period_and_offset_loop() {
 
     if (current_millis - last_val_print > 10) {
         Serial.print(cycler1.get_value());
-        // Serial.print(cycler1.get_period());
-        // Serial.print(cycler1.get_offset());
         Serial.print(",");
         Serial.println(cycler2.get_value());
-        // Serial.println(cycler2.get_period());
+
+        // Serial.print(cycler1.get_period());
+        // Serial.print(",");
+        // Serial.print(cycler1.get_offset());
+        // Serial.print(",");
+        // Serial.print(cycler2.get_period());
+        // Serial.print(",");
         // Serial.println(cycler2.get_offset());
+
         last_val_print = current_millis;
     }
 }
@@ -276,8 +281,8 @@ void setup() {
     // change_period_detect_minmax_setup();
     // gradual_offset_setup();
     // gradual_period_setup();
-    // gradual_period_and_offset_setup();
-    offset_test_setup();
+    gradual_period_and_offset_setup();
+    // offset_test_setup();
     Serial.begin(9600);
 }
 
@@ -288,6 +293,6 @@ void loop() {
     // change_period_detect_minmax_loop();
     // gradual_offset_loop();
     // gradual_period_loop();
-    // gradual_period_and_offset_loop();
-    offset_test_loop();
+    gradual_period_and_offset_loop();
+    // offset_test_loop();
 }

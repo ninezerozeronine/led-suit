@@ -209,48 +209,48 @@ float Cycler::_calculate_SQUARE() {
 }
 
 // I'm sure there's logic here that could tidy this up. Thsi is very naieve.
-uint16_t Cycler::_get_gradual_value(uint16_t current, uint16_t target) {
+uint16_t Cycler::_get_gradual_value(uint16_t current, uint16_t target, bool allow_wrap) {
     uint16_t ret = current;
 
-    // if (target > current) {
-    //     uint16_t forward_dist = target - current;
-    //     uint16_t backward_dist = _period - forward_dist;
-    //     if ((forward_dist < GRADUAL_AMOUNT) || (backward_dist < GRADUAL_AMOUNT) ) {
-    //         ret = target;
-    //     } else {
-    //         if (backward_dist < forward_dist) {
-    //             ret = (current + _period - GRADUAL_AMOUNT) % _period;
-    //         } else {
-    //             ret = current + GRADUAL_AMOUNT;
-    //         }
-    //     }
-    // } else {
-    //     uint16_t backward_dist = current - target;
-    //     uint16_t forward_dist = _period - backward_dist;
-    //     if ((forward_dist < GRADUAL_AMOUNT) || (backward_dist < GRADUAL_AMOUNT) ) {
-    //         ret = target;
-    //     } else {
-    //         if (forward_dist < backward_dist) {
-    //             ret = (current + _period + GRADUAL_AMOUNT) % _period;
-    //         } else {
-    //             ret = current - GRADUAL_AMOUNT;
-    //         }
-    //     }
-    // }
-
-    // return ret;
-
-    if (target > current) {
-        if (target - current > GRADUAL_AMOUNT) {
-            ret = current + GRADUAL_AMOUNT;
+    if (allow_wrap) {
+        if (target > current) {
+            uint16_t forward_dist = target - current;
+            uint16_t backward_dist = _period - forward_dist;
+            if ((forward_dist < GRADUAL_AMOUNT) || (backward_dist < GRADUAL_AMOUNT) ) {
+                ret = target;
+            } else {
+                if (backward_dist < forward_dist) {
+                    ret = (current + _period - GRADUAL_AMOUNT) % _period;
+                } else {
+                    ret = current + GRADUAL_AMOUNT;
+                }
+            }
         } else {
-            ret = target;
+            uint16_t backward_dist = current - target;
+            uint16_t forward_dist = _period - backward_dist;
+            if ((forward_dist < GRADUAL_AMOUNT) || (backward_dist < GRADUAL_AMOUNT) ) {
+                ret = target;
+            } else {
+                if (forward_dist < backward_dist) {
+                    ret = (current + _period + GRADUAL_AMOUNT) % _period;
+                } else {
+                    ret = current - GRADUAL_AMOUNT;
+                }
+            }
         }
     } else {
-        if (current - target > GRADUAL_AMOUNT) {
-            ret = current - GRADUAL_AMOUNT;
+        if (target > current) {
+            if (target - current > GRADUAL_AMOUNT) {
+                ret = current + GRADUAL_AMOUNT;
+            } else {
+                ret = target;
+            }
         } else {
-            ret = target;
+            if (current - target > GRADUAL_AMOUNT) {
+                ret = current - GRADUAL_AMOUNT;
+            } else {
+                ret = target;
+            }
         }
     }
     return ret;
@@ -264,31 +264,60 @@ void Cycler::_update_graduals() {
     uint8_t millis_since_last_grad = current_time - _last_gradual_time;
 
     if (millis_since_last_grad > GRADUAL_INTERVAL) {
-        if (_gradual_task == OFFSET) {
-            _gradual_task = PERIOD;
-            bool offset_not_reached = _target_offset != _offset;
-            if (offset_not_reached) {
-                uint16_t new_offset = _get_gradual_value(
-                    _offset, 
-                    _target_offset
-                );
-                _offset = new_offset;
-                _last_gradual_time = current_time;
-            }
-        } else {
-            _gradual_task = OFFSET;
-            bool period_not_reached = _target_period != _period;
-            if (period_not_reached) {
-                uint16_t new_period = _get_gradual_value(
-                    _period, 
-                    _target_period
-                );
-                _set_period(new_period, true, true);
-                _last_gradual_time = current_time;
-            }
+        bool offset_not_reached = _target_offset != _offset;
+        bool period_not_reached = _target_period != _period;
+        if (period_not_reached) {
+            bool wrap = false;
+            uint16_t new_period = _get_gradual_value(
+                _period, 
+                _target_period,
+                wrap
+            );
+            _set_period(new_period, true, true);
+            _last_gradual_time = current_time;
+        } else if (offset_not_reached) {
+            bool wrap = true;
+            uint16_t new_offset = _get_gradual_value(
+                _offset, 
+                _target_offset,
+                wrap
+            );
+            _offset = new_offset;
+            _last_gradual_time = current_time;
         }
     }
+
+    // if (millis_since_last_grad > GRADUAL_INTERVAL) {
+    //     if (_gradual_task == OFFSET) {
+    //         _gradual_task = PERIOD;
+    //         bool offset_not_reached = _target_offset != _offset;
+    //         if (offset_not_reached) {
+    //             bool wrap = true;
+    //             uint16_t new_offset = _get_gradual_value(
+    //                 _offset, 
+    //                 _target_offset,
+    //                 wrap
+    //             );
+    //             _offset = new_offset;
+    //             _last_gradual_time = current_time;
+    //         }
+    //     } else {
+    //         _gradual_task = OFFSET;
+    //         bool period_not_reached = _target_period != _period;
+    //         if (period_not_reached) {
+    //             bool wrap = false;
+    //             uint16_t new_period = _get_gradual_value(
+    //                 _period, 
+    //                 _target_period,
+    //                 wrap
+    //             );
+    //             _set_period(new_period, true, true);
+    //             _last_gradual_time = current_time;
+    //         }
+    //     }
+    // }
 }
+
 
 // Call this once each time around the main arduino loop
 //
