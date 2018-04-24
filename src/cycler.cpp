@@ -276,7 +276,7 @@ void Cycler::_update_graduals() {
             _set_period(new_period, true, true);
             _last_gradual_time = current_time;
         } else if (offset_not_reached) {
-            bool wrap = true;
+            bool wrap = false;
             uint16_t new_offset = _get_gradual_value(
                 _offset, 
                 _target_offset,
