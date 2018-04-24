@@ -12,9 +12,11 @@ unsigned long last_val_print = 0;
 
 
 void drive_tapper() {
-    taptempo.tap();
-    cycler_driven.set_period_gradual(taptempo.get_period());
-    cycler_driven.set_offset_gradual(taptempo.get_offset());
+    if (taptempo.tap()) {
+        // Serial.println(300);
+        cycler_driven.set_period_gradual(taptempo.get_period());
+        cycler_driven.set_offset_gradual(taptempo.get_offset());
+    }
 } 
 
 void tempo_pickup_test_setup() {
@@ -71,7 +73,7 @@ void button_driver_graph_setup() {
     button.init();
     cycler_driven.init();
     cycler_driven.set_period_immediate(1000);
-    cycler_driven.set_cycle_mode(Cycler::TRIANGLE);
+    cycler_driven.set_cycle_mode(Cycler::TRIG);
 }
 
 void button_driver_graph_loop() {
@@ -84,16 +86,15 @@ void setup() {
     // put your setup code here, to run once:
 
     // tempo_pickup_test_setup();
-    // button_driver_numbers_setup();
-    button_driver_graph_setup();
+    button_driver_numbers_setup();
+    // button_driver_graph_setup();
     Serial.begin(9600);
-
 }
 
 void loop() {
     // put your main code here, to run repeatedly:
 
     // tempo_pickup_test_loop();
-    // button_driver_numbers_loop();
-    button_driver_graph_loop();
+    button_driver_numbers_loop();
+    // button_driver_graph_loop();
 }

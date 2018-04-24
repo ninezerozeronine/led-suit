@@ -7,7 +7,7 @@
 #include <Arduino.h>
 
 #define GRADUAL_AMOUNT 10
-#define GRADUAL_INTERVAL 5
+#define GRADUAL_INTERVAL 10
 
 class Cycler {
     public:
@@ -54,7 +54,8 @@ class Cycler {
     private:
         enum gradual_task_t {
             OFFSET,
-            PERIOD
+            PERIOD,
+            SKIP
         };
 
         // How long it takes to get to the same point in the cycle in milliseconds

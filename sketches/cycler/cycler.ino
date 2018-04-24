@@ -208,11 +208,11 @@ void gradual_period_loop() {
 
 void gradual_period_and_offset_setup() {
     cycler1.init();
-    cycler1.set_cycle_mode(Cycler::TRIG);
+    cycler1.set_cycle_mode(Cycler::TRIANGLE);
     cycler1.set_period_immediate(1000);
 
     cycler2.init();
-    cycler2.set_cycle_mode(Cycler::TRIG);
+    cycler2.set_cycle_mode(Cycler::TRIANGLE);
     cycler2.set_period_immediate(1000);
 }
 
@@ -224,7 +224,7 @@ void gradual_period_and_offset_loop() {
 
     unsigned long current_millis = millis();
     if (current_millis - last_period_change > 10000) {
-        //Serial.println(350);
+        Serial.println(350);
         bool maintain_progress = false;
         bool gradual = true;
         uint16_t new_period = random(500,2000);
@@ -239,8 +239,8 @@ void gradual_period_and_offset_loop() {
     }
 
     if (current_millis - last_val_print > 10) {
-        Serial.print(cycler1.get_value());
-        Serial.print(",");
+        // Serial.print(cycler1.get_value());
+        // Serial.print(",");
         Serial.println(cycler2.get_value());
 
         // Serial.print(cycler1.get_period());
@@ -282,9 +282,9 @@ void setup() {
 	// five_cyclers_setup();
 	// cycle_types_setup();
     // change_period_detect_minmax_setup();
-    gradual_offset_setup();
+    // gradual_offset_setup();
     // gradual_period_setup();
-    // gradual_period_and_offset_setup();
+    gradual_period_and_offset_setup();
     // offset_test_setup();
     Serial.begin(9600);
 }
@@ -294,8 +294,8 @@ void loop() {
     // five_cyclers_loop();
     // cycle_types_loop();
     // change_period_detect_minmax_loop();
-    gradual_offset_loop();
+    // gradual_offset_loop();
     // gradual_period_loop();
-    // gradual_period_and_offset_loop();
+    gradual_period_and_offset_loop();
     // offset_test_loop();
 }

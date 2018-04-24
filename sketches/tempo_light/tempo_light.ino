@@ -15,9 +15,10 @@ TapTempo taptempo;
 Button button(BUTTON_PIN);
 
 void button_pressed() {
-    taptempo.tap();
-    cycler.set_period_gradual(taptempo.get_period() * 2.0);
-    cycler.set_offset_gradual(taptempo.get_offset());
+    if (taptempo.tap()) {
+        cycler.set_period_gradual(taptempo.get_period() * 2.0);
+        cycler.set_offset_gradual(taptempo.get_offset());
+    }
 }
 
 void setup() {

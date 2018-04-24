@@ -10,7 +10,7 @@
 class TapTempo {
     public:
         TapTempo();
-        void tap();
+        bool tap();
         uint16_t get_period();
         uint16_t get_offset();
 

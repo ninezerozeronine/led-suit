@@ -208,7 +208,7 @@ float Cycler::_calculate_SQUARE() {
     return val;
 }
 
-// I'm sure there's logic here that could tidy this up. Thsi is very naieve.
+// I'm sure there's logic here that could tidy this up. This is very naieve.
 uint16_t Cycler::_get_gradual_value(uint16_t current, uint16_t target, bool allow_wrap) {
     uint16_t ret = current;
 
@@ -276,14 +276,21 @@ void Cycler::_update_graduals() {
             _set_period(new_period, true, true);
             _last_gradual_time = current_time;
         } else if (offset_not_reached) {
-            bool wrap = false;
-            uint16_t new_offset = _get_gradual_value(
-                _offset, 
-                _target_offset,
-                wrap
-            );
-            _offset = new_offset;
             _last_gradual_time = current_time;
+            if (_gradual_task == OFFSET) {
+                // This skip helps the gradual offset move happen
+                // without disturbnig the wave too much
+                _gradual_task = SKIP;
+                bool wrap = true;
+                uint16_t new_offset = _get_gradual_value(
+                    _offset, 
+                    _target_offset,
+                    wrap
+                );
+                _offset = new_offset;
+            } else {
+                _gradual_task = OFFSET;
+            }
         }
     }
 
