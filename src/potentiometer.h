@@ -19,7 +19,7 @@ class Potentiometer {
         uint8_t _newest_reading_index;
 
         // The last few readings to smooth out noise
-        uint16_t _last_readings[NUM_READINGS];
+        uint16_t _readings[NUM_READINGS];
 
         // The pin this potentiometer is reading from
         uint8_t _pin;
@@ -32,6 +32,8 @@ class Potentiometer {
 
         // When the last update was
         unsigned long _last_update;
+
+        bool all_readings_same_as(uint16_t new_value);
 };
 
 #endif

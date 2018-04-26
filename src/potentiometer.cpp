@@ -16,7 +16,7 @@ Potentiometer::Potentiometer(uint8_t pin, uint8_t update_period) {
     _last_update = 0;
     _newest_reading_index = NUM_READINGS - 1;
     for (uint8_t index = 0; index < NUM_READINGS; ++index) {
-        _last_readings[index] = 0;
+        _readings[index] = 0;
     }
 }
 
@@ -28,7 +28,7 @@ void Potentiometer::init() {
     _value = analogRead(_pin);
     _last_update = millis();
     for (uint8_t index = 0; index < NUM_READINGS; ++index) {
-        _last_readings[index] = _value;
+        _readings[index] = _value;
     }
 }
 
@@ -45,6 +45,22 @@ uint16_t Potentiometer::get_value(bool un_log) {
     return ret;
 }
 
+
+bool Potentiometer::all_readings_same_as(uint16_t new_value){
+    bool all_same = true;
+    for (uint8_t index = 0; index < NUM_READINGS; ++index) {
+        if (all_same) {
+            if (new_value != _readings[index]) {
+                all_same = false;
+            }
+        } else {
+            break;
+        }
+    }
+    return all_same;
+}
+
+
 // Update the potentiometer
 //
 // To be called once every time the main loop runs
@@ -58,27 +74,24 @@ void Potentiometer::update(void (*val_change_callback)(uint16_t)) {
         // Store this update time
         _last_update = current_time;
 
-        // Store the current value
-        uint16_t _value = analogRead(_pin);
+        // Get the current value
+        uint16_t value = analogRead(_pin);
 
-        // Average all the last readings
-        uint16_t average = 0;
-        for (uint8_t index = 0; index < NUM_READINGS; ++index) {
-            average += _last_readings[index] = 0;
-        }
-        average = average / NUM_READINGS;
+        // Update the most recent index
+        _newest_reading_index = (_newest_reading_index + 1) % NUM_READINGS;
 
-        // Call the callback if the value changed
-        if (_value != average) {
+        // Store the reading in the array
+        _readings[_newest_reading_index] = value;
+
+        // find difference to last stable reading
+        int8_t diff = value - _value;
+        diff = abs(diff);
+
+        if ( ((value != _value) && all_readings_same_as(value)) || diff > 2) {
+            _value = value;
             if (val_change_callback != NULL) {
                 val_change_callback(_value);
             }
         }
-
-        // Move the readings pointer along one, wrapping if needed
-        uint8_t _newest_reading_index = (_newest_reading_index + 1) % NUM_READINGS;
-
-        // Store the last value
-        _last_readings[_newest_reading_index] = _value;
     }
 }
