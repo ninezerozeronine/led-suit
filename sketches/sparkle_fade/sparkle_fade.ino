@@ -45,7 +45,7 @@ void spawn_lights() {
             break;
         }
     }
-    //Serial.println(350);
+    //Serial.println(millis());
 }
 
 void fade_lights() {
@@ -54,57 +54,57 @@ void fade_lights() {
     }
 }
 
-void set_spawn_rate(uint16_t pot_val) {
-    uint16_t spawn_rate = map(pot_val, 0, 1023, 5, 1000);
-    spawn_timer.set_period_immediate(spawn_rate, true);
-}
-
-void set_spawn_amount(uint16_t pot_val) {
-    num_to_spawn = map(pot_val, 0, 1023, 0, 10);
-}
-
-void set_fade_rate(uint16_t pot_val) {
-    uint16_t fade_rate = map(pot_val, 0, 1023, 5, 1000);
-    fade_timer.set_period_immediate(fade_rate, true);
-}
-
-void set_fade_amount(uint16_t pot_val) {
-    fade_amount = map(pot_val, 0, 1023, 0, 255);
-}
-
 // void set_spawn_rate(uint16_t pot_val) {
 //     uint16_t spawn_rate = map(pot_val, 0, 1023, 5, 1000);
-//     spawn_timer.set_period_immediate(spawn_rate);
-//     Serial.print("Spawning every: ");
-//     Serial.print(spawn_rate);
-//     Serial.println("ms.");
+//     spawn_timer.set_period_immediate(spawn_rate, true);
 // }
 
 // void set_spawn_amount(uint16_t pot_val) {
 //     num_to_spawn = map(pot_val, 0, 1023, 0, 10);
-//     Serial.print("Spawning ");
-//     Serial.print(num_to_spawn);
-//     Serial.println(" lights per spawn event.");
 // }
 
 // void set_fade_rate(uint16_t pot_val) {
 //     uint16_t fade_rate = map(pot_val, 0, 1023, 5, 1000);
-//     fade_timer.set_period_immediate(fade_rate);
-//     Serial.print("Fading every: ");
-//     Serial.print(fade_rate);
-//     Serial.println("ms.");
+//     fade_timer.set_period_immediate(fade_rate, true);
 // }
 
 // void set_fade_amount(uint16_t pot_val) {
 //     fade_amount = map(pot_val, 0, 1023, 0, 255);
-//     Serial.print("Fading ");
-//     Serial.print(float(fade_amount)/255.0);
-//     Serial.println(" percent per fade event.");
 // }
+
+void set_spawn_rate(uint16_t pot_val) {
+    uint16_t spawn_rate = map(pot_val, 0, 1023, 5, 1000);
+    spawn_timer.set_period_immediate(spawn_rate);
+    Serial.print("Spawning every: ");
+    Serial.print(spawn_rate);
+    Serial.println("ms.");
+}
+
+void set_spawn_amount(uint16_t pot_val) {
+    num_to_spawn = map(pot_val, 0, 1023, 0, 10);
+    Serial.print("Spawning ");
+    Serial.print(num_to_spawn);
+    Serial.println(" lights per spawn event.");
+}
+
+void set_fade_rate(uint16_t pot_val) {
+    uint16_t fade_rate = map(pot_val, 0, 1023, 5, 1000);
+    fade_timer.set_period_immediate(fade_rate);
+    Serial.print("Fading every: ");
+    Serial.print(fade_rate);
+    Serial.println("ms.");
+}
+
+void set_fade_amount(uint16_t pot_val) {
+    fade_amount = map(pot_val, 0, 1023, 0, 255);
+    Serial.print("Fading ");
+    Serial.print(float(fade_amount)/255.0);
+    Serial.println(" percent per fade event.");
+}
 
 
 void setup() {
-    //Serial.begin(9600);
+    Serial.begin(9600);
     FastLED.addLeds<NEOPIXEL, LED_DATA_PIN>(leds, NUM_LEDS);
     spawn_timer.init();
     spawn_timer.set_cycle_mode(Cycler::SQUARE);
@@ -130,8 +130,8 @@ void setup() {
 }
 
 void loop() {
-    spawn_timer.update(&spawn_lights);
-    fade_timer.update(&fade_lights);
+    spawn_timer.update(NULL, &spawn_lights);
+    fade_timer.update(NULL, &fade_lights);
 
     spawn_rate_pot.update(&set_spawn_rate);
     spawn_amount_pot.update(&set_spawn_amount);

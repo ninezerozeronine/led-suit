@@ -51,6 +51,9 @@ class Cycler {
         void set_offset_gradual(uint16_t offset);
         uint16_t get_offset();
 
+        // Calucualte the current normalised progress
+        float _calculate_normalised_progress();
+
     private:
         enum gradual_task_t {
             OFFSET,
@@ -99,13 +102,12 @@ class Cycler {
         // Whetehr the callbacks have been invalidated by changing duty or period
         bool _callbacks_invalidated;
 
-        // Calucualte the current normalised progress
-        float _calculate_normalised_progress();
+
 
         // Update various modes
-        void _update_TRIG(void (*min_callback)()=NULL, void (*max_callback)()=NULL);
-        void _update_TRIANGLE(void (*min_callback)()=NULL, void (*max_callback)()=NULL);
-        void _update_SQUARE(void (*min_callback)()=NULL, void (*max_callback)()=NULL);
+        void _update_TRIG(float current_normalised_progress, void (*min_callback)()=NULL, void (*max_callback)()=NULL);
+        void _update_TRIANGLE(float current_normalised_progress, void (*min_callback)()=NULL, void (*max_callback)()=NULL);
+        void _update_SQUARE(float current_normalised_progress, void (*min_callback)()=NULL, void (*max_callback)()=NULL);
 
         // Setup when entering different cycle modes
         float _calculate_STATIC();

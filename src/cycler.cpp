@@ -339,6 +339,7 @@ void Cycler::update(void (*min_callback)(), void (*max_callback)()) {
     // If measurable time has passed
     uint8_t elapsed_millis = current_time - _last_update_time;
     if (elapsed_millis > 0) {
+    float current_normalised_progress = _calculate_normalised_progress();   
         if (!_callbacks_invalidated) {
             // Update based on current mode
             switch (_cycle_mode) {
@@ -346,13 +347,13 @@ void Cycler::update(void (*min_callback)(), void (*max_callback)()) {
                     // Nothing to do!
                     break;
                 case TRIG:
-                    _update_TRIG(min_callback, max_callback);
+                    _update_TRIG(current_normalised_progress, min_callback, max_callback);
                     break;
                 case TRIANGLE:
-                    _update_TRIANGLE(min_callback, max_callback);
+                    _update_TRIANGLE(current_normalised_progress, min_callback, max_callback);
                     break;
                 case SQUARE:
-                    _update_SQUARE(min_callback, max_callback);
+                    _update_SQUARE(current_normalised_progress, min_callback, max_callback);
                     break; 
             }
         } else {
@@ -361,15 +362,14 @@ void Cycler::update(void (*min_callback)(), void (*max_callback)()) {
 
         // Store current values for the next update
         _last_update_time = current_time;
-        _last_normalised_progress = _calculate_normalised_progress();
+        _last_normalised_progress = current_normalised_progress;
     }
 }
 
 
-void Cycler::_update_TRIG(void (*min_callback)(), void (*max_callback)()) {
+void Cycler::_update_TRIG(float current_normalised_progress, void (*min_callback)(), void (*max_callback)()) {
     // If the normalised progress has decreased, then the period has reset so we hit a min
     if (min_callback != NULL) {
-        float current_normalised_progress = _calculate_normalised_progress();
         if (current_normalised_progress < _last_normalised_progress) {
             min_callback();
         }
@@ -377,7 +377,6 @@ void Cycler::_update_TRIG(void (*min_callback)(), void (*max_callback)()) {
 
     // If the normalised progress has gone from less than to greater than halfway then we hit a max
     if (max_callback != NULL) {
-        float current_normalised_progress = _calculate_normalised_progress();
         if ((_last_normalised_progress <= 0.5) && (current_normalised_progress > 0.5)) {
             max_callback();
         }
@@ -385,10 +384,9 @@ void Cycler::_update_TRIG(void (*min_callback)(), void (*max_callback)()) {
 }
 
 
-void Cycler::_update_TRIANGLE(void (*min_callback)(), void (*max_callback)()) {
+void Cycler::_update_TRIANGLE(float current_normalised_progress, void (*min_callback)(), void (*max_callback)()) {
     // If the normalised progress has decreased, then the period has reset so we hit a min
     if (min_callback != NULL) {
-        float current_normalised_progress = _calculate_normalised_progress();
         if (current_normalised_progress < _last_normalised_progress) {
             min_callback();
         }
@@ -396,7 +394,6 @@ void Cycler::_update_TRIANGLE(void (*min_callback)(), void (*max_callback)()) {
 
     // If the normalised progress has gone from less than to greater than the duty we hit a max
     if (max_callback != NULL) {
-        float current_normalised_progress = _calculate_normalised_progress();
         if (_last_normalised_progress <= _duty && current_normalised_progress > _duty) {
             max_callback();
         }
@@ -404,10 +401,9 @@ void Cycler::_update_TRIANGLE(void (*min_callback)(), void (*max_callback)()) {
 }
 
 
-void Cycler::_update_SQUARE(void (*min_callback)(), void (*max_callback)()) {
+void Cycler::_update_SQUARE(float current_normalised_progress, void (*min_callback)(), void (*max_callback)()) {
     // If the normalised progress has decreased, then the period has reset so we hit a max
     if (max_callback != NULL) {
-        float current_normalised_progress = _calculate_normalised_progress();
         if (current_normalised_progress < _last_normalised_progress) {
             max_callback();
         }
@@ -415,7 +411,6 @@ void Cycler::_update_SQUARE(void (*min_callback)(), void (*max_callback)()) {
 
     // If the normalised progress has gone from less than to greater than the duty we hit a min
     if (min_callback != NULL) {
-        float current_normalised_progress = _calculate_normalised_progress();
         if (_last_normalised_progress <= _duty && current_normalised_progress > _duty) {
             min_callback();
         }
