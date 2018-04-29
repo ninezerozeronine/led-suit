@@ -217,16 +217,14 @@ void gradual_period_and_offset_setup() {
 }
 
 void gradual_period_and_offset_loop() {
-    //cycler1.update(&min_reached, &max_reached);
-    cycler1.update();
-    // cycler2.update(NULL, &ticker);
-    cycler2.update();
-
     unsigned long current_millis = millis();
+    //cycler1.update(current_millis&min_reached, &max_reached);
+    cycler1.update(current_millis);
+    // cycler2.update(current_millisNULL, &ticker);
+    cycler2.update(current_millis);
+
     if (current_millis - last_period_change > 10000) {
         Serial.println(350);
-        bool maintain_progress = false;
-        bool gradual = true;
         uint16_t new_period = random(500,2000);
         uint16_t new_offset = random(new_period);
 
@@ -241,7 +239,7 @@ void gradual_period_and_offset_loop() {
     if (current_millis - last_val_print > 10) {
         // Serial.print(cycler1.get_value());
         // Serial.print(",");
-        Serial.println(cycler2.get_value());
+        // Serial.println(cycler2.get_value());
 
         // Serial.print(cycler1.get_period());
         // Serial.print(",");
@@ -250,6 +248,11 @@ void gradual_period_and_offset_loop() {
         // Serial.print(cycler2.get_period());
         // Serial.print(",");
         // Serial.println(cycler2.get_offset());
+
+        Serial.print(cycler1.get_period());
+        Serial.print(",");
+        Serial.println(cycler1.get_offset());
+
 
         last_val_print = current_millis;
     }
@@ -287,6 +290,7 @@ void setup() {
     gradual_period_and_offset_setup();
     // offset_test_setup();
     Serial.begin(9600);
+    delay(50);
 }
 
 void loop() {

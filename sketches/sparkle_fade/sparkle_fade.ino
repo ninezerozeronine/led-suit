@@ -130,8 +130,9 @@ void setup() {
 }
 
 void loop() {
-    spawn_timer.update(NULL, &spawn_lights);
-    fade_timer.update(NULL, &fade_lights);
+    current_time = millis();
+    spawn_timer.update(current_time, NULL, &spawn_lights);
+    fade_timer.update(current_time, NULL, &fade_lights);
 
     spawn_rate_pot.update(&set_spawn_rate);
     spawn_amount_pot.update(&set_spawn_amount);

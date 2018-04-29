@@ -38,17 +38,17 @@ class Cycler {
         void init();
         void set_cycle_mode(mode_t cycle_mode);
         float get_value();
-        void update(void (*min_callback)()=NULL, void (*max_callback)()=NULL);
+        void update(unsigned long current_time, void (*min_callback)()=NULL, void (*max_callback)()=NULL);
         void set_min(float min);
         void set_max(float max);
         void set_duty(float duty);
 
         void set_period_immediate(uint16_t period, bool maintain_progress=false);
-        void set_period_gradual(uint16_t period);
+        void set_period_gradual(uint16_t period, uint16_t duration=2000);
         uint16_t get_period();
 
         void set_offset_immediate(uint16_t offset);
-        void set_offset_gradual(uint16_t offset);
+        void set_offset_gradual(uint16_t offset, uint16_t duration=2000);
         uint16_t get_offset();
 
         // Calucualte the current normalised progress
@@ -91,10 +91,14 @@ class Cycler {
         // When the cycler was last updated
         unsigned long _last_update_time;
 
+        unsigned long _current_time;
+
         // When the cycler last made a gradual change
         unsigned long _last_gradual_time;
 
         gradual_task_t _gradual_task;
+
+        unsigned long _gradual_deadline;
 
         // The duty or ratio of on to off when in SQUARE or TRIANGLE scycle mode
         float _duty;
@@ -118,6 +122,8 @@ class Cycler {
         void _update_graduals();
         void _set_period(uint16_t period, bool maintain_progress=false, bool gradual_offset=false);
         uint16_t _get_gradual_value(uint16_t current, uint16_t target, bool allow_wrap=false);
+        int _get_gradual_amount(int time_since_last_grad, int distance);
+        int _get_shortest_signed_offset_distance();
 };
 
 #endif

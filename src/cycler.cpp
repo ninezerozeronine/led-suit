@@ -30,8 +30,8 @@ Cycler::Cycler(
 // Initialise the object
 //
 // Call this outside the constructor so caller has control when it runs
-void Cycler::init() {
-    _last_update_time = _last_gradual_time = millis();
+void Cycler::init(unsigned long current_time) {
+    _last_update_time = _last_gradual_time = _current_time = current_time;
     _last_normalised_progress = _calculate_normalised_progress();
 }
 
@@ -71,8 +71,10 @@ void Cycler::set_offset_immediate(uint16_t offset) {
 }
 
 
-void Cycler::set_offset_gradual(uint16_t offset) {
+void Cycler::set_offset_gradual(uint16_t offset, uint16_t duration) {
     _target_offset = offset;
+    _gradual_deadline = _current_time + duration;
+
 }
 
 
@@ -91,8 +93,9 @@ void Cycler::set_period_immediate(uint16_t period, bool maintain_progress) {
 }
 
 
-void Cycler::set_period_gradual(uint16_t period) {
+void Cycler::set_period_gradual(uint16_t period, uint16_t duration) {
     _target_period = period;
+    _gradual_deadline = _current_time + duration;
 }
 
 
@@ -108,14 +111,13 @@ uint16_t Cycler::get_period(){
 void Cycler::_set_period(uint16_t period, bool maintain_progress, bool gradual_offset) {
     if (maintain_progress) {
         // How far through the current period are we right now
-        unsigned long current_time = millis();
-        unsigned long cycler_time = current_time + _offset;
+        unsigned long cycler_time = _current_time + _offset;
         unsigned long old_period_time = cycler_time % _period;
         float period_progress = float(old_period_time)/float(_period);
 
         // Calculate offset to get us to the same point in the period
         unsigned long new_period_time = period * period_progress;
-        unsigned long non_offset_new_period_time = current_time % period;
+        unsigned long non_offset_new_period_time = _current_time % period;
         long new_offset = new_period_time - non_offset_new_period_time;
 
         // Ensure offset is +ve
@@ -256,43 +258,81 @@ uint16_t Cycler::_get_gradual_value(uint16_t current, uint16_t target, bool allo
     return ret;
 }
 
+int Cycler::_get_shortest_signed_offset_distance() {
+    int direct_distance = _target_offset - _offset;
+    direct_distance = mod(direct_distance);
+    int wrap_distance = _period - direct_distance;
+    if (wrap_distance < direct_distance) {
+        if (_target_offset > _offset) {
+            return wrap_distance;
+        } else {
+            return wrap_distance * -1;
+        }
+    } else {
+        return direct_distance;
+    }
+}
+
+
+int Cycler::_get_gradual_amount(int time_since_last_grad, int distance) {
+    int time_left = _gradual_deadline = _current_time;
+    int remaining_steps = time_left / time_since_last_grad;
+    return distance / remaining_steps;
+}
+
 
 void Cycler::_update_graduals() {
     // Get how long it's been since the last update of the graduals
-    unsigned long current_time = millis();
+    uint8_t millis_since_last_grad = _current_time - _last_gradual_time;
 
-    uint8_t millis_since_last_grad = current_time - _last_gradual_time;
-
-    if (millis_since_last_grad > GRADUAL_INTERVAL) {
-        bool offset_not_reached = _target_offset != _offset;
-        bool period_not_reached = _target_period != _period;
-        if (period_not_reached) {
-            bool wrap = false;
-            uint16_t new_period = _get_gradual_value(
-                _period, 
-                _target_period,
-                wrap
-            );
-            _set_period(new_period, true, true);
-            _last_gradual_time = current_time;
-        } else if (offset_not_reached) {
-            _last_gradual_time = current_time;
-            if (_gradual_task == OFFSET) {
-                // This skip helps the gradual offset move happen
-                // without disturbnig the wave too much
-                _gradual_task = SKIP;
-                bool wrap = true;
-                uint16_t new_offset = _get_gradual_value(
-                    _offset, 
-                    _target_offset,
-                    wrap
-                );
-                _offset = new_offset;
-            } else {
-                _gradual_task = OFFSET;
-            }
+    bool period_not_reached = _target_period != _period;
+    if (_target_period != _period) {
+        int signed_distance = _target_period - _period;
+        int change = _get_gradual_amount(millis_since_last_grad, signed_distance);
+        _set_period(_period + change, true, true);
+        _last_gradual_time = _current_time;
+    } else if (_target_offset != _offset) {
+        // This skip helps the gradual offset move happen
+        // without disturbing the wave too much
+        if (_gradual_task == OFFSET) {
+            int signed_distance = _get_shortest_signed_offset_distance();
+            int change = _get_gradual_amount(millis_since_last_grad, signed_distance);
+            _offset = new_offset;
+            _gradual_task = SKIP;
+            _last_gradual_time = _current_time;
         }
     }
+
+    // if (millis_since_last_grad > GRADUAL_INTERVAL) {
+    //     bool offset_not_reached = _target_offset != _offset;
+    //     bool period_not_reached = _target_period != _period;
+    //     if (period_not_reached) {
+    //         bool wrap = false;
+    //         uint16_t new_period = _get_gradual_value(
+    //             _period, 
+    //             _target_period,
+    //             wrap
+    //         );
+    //         _set_period(new_period, true, true);
+    //         _last_gradual_time = _current_time;
+    //     } else if (offset_not_reached) {
+    //         _last_gradual_time = _current_time;
+    //         if (_gradual_task == OFFSET) {
+    //             // This skip helps the gradual offset move happen
+    //             // without disturbnig the wave too much
+    //             _gradual_task = SKIP;
+    //             bool wrap = true;
+    //             uint16_t new_offset = _get_gradual_value(
+    //                 _offset, 
+    //                 _target_offset,
+    //                 wrap
+    //             );
+    //             _offset = new_offset;
+    //         } else {
+    //             _gradual_task = OFFSET;
+    //         }
+    //     }
+    // }
 
     // if (millis_since_last_grad > GRADUAL_INTERVAL) {
     //     if (_gradual_task == OFFSET) {
@@ -329,17 +369,16 @@ void Cycler::_update_graduals() {
 // Call this once each time around the main arduino loop
 //
 // min and max callbacks are called when the value hits a max or a min.
-void Cycler::update(void (*min_callback)(), void (*max_callback)()) {
-    // Update the gradual offset and periods
-    _update_graduals();
+void Cycler::update(unsigned long current_time, void (*min_callback)(), void (*max_callback)()) {
+    _current_time = current_time;
 
-    // Get how long it's been since the last update
-    unsigned long current_time = millis();
+    // Update the gradual offset and periods
+    //_update_graduals();
     
     // If measurable time has passed
-    uint8_t elapsed_millis = current_time - _last_update_time;
+    uint8_t elapsed_millis = _current_time - _last_update_time;
     if (elapsed_millis > 0) {
-    float current_normalised_progress = _calculate_normalised_progress();   
+        float current_normalised_progress = _calculate_normalised_progress();   
         if (!_callbacks_invalidated) {
             // Update based on current mode
             switch (_cycle_mode) {
@@ -361,7 +400,7 @@ void Cycler::update(void (*min_callback)(), void (*max_callback)()) {
         }
 
         // Store current values for the next update
-        _last_update_time = current_time;
+        _last_update_time = _current_time;
         _last_normalised_progress = current_normalised_progress;
     }
 }
@@ -419,8 +458,7 @@ void Cycler::_update_SQUARE(float current_normalised_progress, void (*min_callba
 
 
 float Cycler::_calculate_normalised_progress() {
-        unsigned long current_time = millis();
-        unsigned long cycler_time = current_time + _offset;
+        unsigned long cycler_time = _current_time + _offset;
         unsigned long period_time = cycler_time % _period;
         float period_progress = float(period_time)/float(_period);
         return period_progress;
