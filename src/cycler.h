@@ -28,6 +28,8 @@ class Cycler {
             SQUARE
         };
 
+
+        Cycler();
         Cycler(
             uint16_t period=1000,
             float min=0.0,

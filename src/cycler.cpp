@@ -1,6 +1,10 @@
 // Class to handle values that cycle over time
 #include "cycler.h"
 
+Cycler::Cycler() {
+    _constructor_defaults();
+}
+
 // Constructor
 Cycler::Cycler(
             uint16_t period,
@@ -9,6 +13,7 @@ Cycler::Cycler(
             mode_t cycle_mode,
             float duty
 ) {
+    _constructor_defaults();
     if (period < 1) {
         period = 1;
     }
@@ -16,16 +21,25 @@ Cycler::Cycler(
     _offset = _target_offset = 0;
     _min = min;
     _max = max;
-    _value = min;
     _cycle_mode = cycle_mode;
     _duty = duty;
+    _value = min;
+}
+
+Cycler::_constructor_defaults() {
+    _period = _target_period = 1000;
+    _offset = _target_offset = 0;
+    _min = 0.0;
+    _max = 255.0;
+    _value = _min;
+    _cycle_mode = STATIC;
+    _duty = 0.5;
     _last_update_time = 0;
     _last_gradual_time = 0;
     _last_normalised_progress = 0.0;
     _callbacks_invalidated = false;
     _gradual_task = OFFSET;
 }
-
 
 // Initialise the object
 //
