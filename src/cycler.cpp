@@ -26,7 +26,7 @@ Cycler::Cycler(
     _value = min;
 }
 
-Cycler::_constructor_defaults() {
+void Cycler::_constructor_defaults() {
     _period = _target_period = 1000;
     _offset = _target_offset = 0;
     _min = 0.0;

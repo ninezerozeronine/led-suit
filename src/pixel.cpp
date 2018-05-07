@@ -2,6 +2,6 @@
 
 #include "pixel.h"
 
-Pixel::pixel() {
+Pixel::Pixel() {
     
 }

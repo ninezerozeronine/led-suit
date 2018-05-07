@@ -11,7 +11,7 @@ class Pixel {
     private:
         byte x;
         byte y;
-        byte centre_distance;
+        byte distance_from_centre;
 };
 
 #endif

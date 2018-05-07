@@ -120,6 +120,7 @@ class Cycler {
         void _update_graduals();
         void _set_period(uint16_t period, bool maintain_progress=false, bool gradual_offset=false);
         uint16_t _get_gradual_value(uint16_t current, uint16_t target, bool allow_wrap=false);
+        void _constructor_defaults();
 };
 
 #endif
