@@ -64,15 +64,15 @@ float Line::get_signed_distance(float point_x, float point_y) {
     return dot_product;
 }
 
-void Line::_constructor_defaults() {
+void Line::constructor_defaults() {
     x = y = angle = normal_x = 0;
     normal_y = 1;
     normal_needs_calculating = false;
 }
-void Line::_calculate_normal() {
+void Line::calculate_normal() {
     if (normal_needs_calculating) {
         // Convert angle to radians
-        float radians = _angle * 0.017453;
+        float radians = angle * 0.017453;
         normal_x = sin(radians);
         normal_y = cos(radians);
         normal_needs_calculating = false;

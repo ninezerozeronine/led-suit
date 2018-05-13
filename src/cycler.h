@@ -31,7 +31,7 @@ class Cycler {
 
         Cycler();
         Cycler(
-            uint16_t period=1000,
+            uint16_t period,
             float min=0.0,
             float max=255.0,
             mode_t cycle_mode=STATIC,

@@ -4,7 +4,7 @@
 #include "cycler.h"
 #include "potentiometer.h"
 
-#define NUM_LEDS 64
+#define NUM_LEDS 128
 #define LED_DATA_PIN 2
 #define SPAWN_RATE_POT_PIN A0
 #define SPAWN_AMOUNT_POT_PIN A1
@@ -38,7 +38,7 @@ void spawn_lights() {
     for(int index = 0; index < NUM_LEDS; index++) {
         if (num_spawned < num_to_spawn) {
             if (!leds[random_indexes[index]]) {
-                leds[random_indexes[index]] = CRGB::White;
+                leds[random_indexes[index]] = CRGB::Orange;
                 num_spawned++;
             }
         } else {
@@ -138,8 +138,8 @@ void loop() {
     fade_rate_pot.update(&set_fade_rate);
     fade_amount_pot.update(&set_fade_amount);
 
-    //Serial.println(spawn_timer.get_value());
+    // Serial.println(spawn_timer.get_value());
 
-    FastLED.setMaxPowerInVoltsAndMilliamps(5, 500);
+    FastLED.setMaxPowerInVoltsAndMilliamps(5, 1000);
     FastLED.show();
 }

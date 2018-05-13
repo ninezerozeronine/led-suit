@@ -1,7 +1,7 @@
 #include <FastLED.h>
 #include <Arduino.h>
 
-#define NUM_LEDS 64
+#define NUM_LEDS 256
 #define DATA_PIN 2
 
 CRGB leds[NUM_LEDS];
@@ -92,7 +92,7 @@ void num_and_hsv(){
         } 
     }
     FastLED.setBrightness(dim8_raw(brightness));
-    FastLED.setMaxPowerInVoltsAndMilliamps(5, 500);
+    FastLED.setMaxPowerInVoltsAndMilliamps(5, 1000);
     FastLED.show();
     last_millis = current_millis;
 }
