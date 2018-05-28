@@ -5,7 +5,7 @@ LinearFill::LinearFill() {
 }
 
 
-LinearFill::LinearFill(CRGB* leds_) {
+LinearFill::LinearFill(CRGB* leds_) : Mode(leds_) {
     constructor_defaults();
 }
 
@@ -22,20 +22,21 @@ void LinearFill::update(unsigned long current_millis){
         } else {
             leds[index] = CRGB::Black;
         }
+    }
 }
 
 
-void LinearFill::pot_0(int value){
+void LinearFill::pot_0(uint16_t value){
     num_lit = map(value, 0, 1023, 0, NUM_LEDS);
 }
 
 
-void LinearFill::pot_1(int value){
+void LinearFill::pot_1(uint16_t value){
     hue = map(value, 0, 1023, 0, 255);
 }
 
 
-void LinearFill::pot_2(int value){
+void LinearFill::pot_2(uint16_t value){
     saturation = map(value, 0, 1023, 0, 255);
 }
 

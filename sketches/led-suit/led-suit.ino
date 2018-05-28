@@ -15,6 +15,26 @@ Potentiometer pot_4(POT_4_PIN);
 
 Mode * current_mode_ptr;
 
+void pot_0_updated(uint16_t new_val){
+    current_mode_ptr->pot_0(new_val);
+}
+
+void pot_1_updated(uint16_t new_val){
+    current_mode_ptr->pot_1(new_val);
+}
+
+void pot_2_updated(uint16_t new_val){
+    current_mode_ptr->pot_2(new_val);
+}
+
+void pot_3_updated(uint16_t new_val){
+    current_mode_ptr->pot_3(new_val);
+}
+
+void pot_4_updated(uint16_t new_val){
+    current_mode_ptr->pot_4(new_val);
+}
+
 void setup() {
     Serial.begin(9600);
     FastLED.addLeds<NEOPIXEL, LED_DATA_PIN>(leds, NUM_LEDS);
@@ -28,20 +48,22 @@ void setup() {
     delay(50);
 
     for(int index = 0; index < NUM_LEDS; index++) {
-        leds[index] = CRGB::Black;
+        leds[index] = CRGB::Red;
     }
 
     current_mode_ptr = new LinearFill(leds);
 }
 
 void loop() {
-    current_millis = millis()
+    Serial.println(millis());
 
-    pot0.update(&current_mode_ptr->pot0);
-    pot1.update(&current_mode_ptr->pot1);
-    pot2.update(&current_mode_ptr->pot2);
-    pot3.update(&current_mode_ptr->pot3);
-    pot4.update(&current_mode_ptr->pot4);
+    unsigned long current_millis = millis();
+
+    pot_0.update(&pot_0_updated);
+    pot_1.update(&pot_1_updated);
+    pot_2.update(&pot_2_updated);
+    pot_3.update(&pot_3_updated);
+    pot_4.update(&pot_4_updated);
 
     current_mode_ptr->update(current_millis);
 

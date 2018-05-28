@@ -7,17 +7,17 @@
 class LinearFill: public Mode {
     public:
         LinearFill();
-        LinearFill(CRGB* leds_) : Mode(leds_);
-        void initialise(unsigned long current_millis);
-        void update(unsigned long current_millis);
-        void pot_0(int value);
-        void pot_1(int value);
-        void pot_2(int value);
+        LinearFill(CRGB* leds_);
+        virtual void initialise(unsigned long current_millis);
+        virtual void update(unsigned long current_millis);
+        virtual void pot_0(uint16_t value);
+        virtual void pot_1(uint16_t value);
+        virtual void pot_2(uint16_t value);
     private:
         void constructor_defaults();
+        int num_lit;
         int hue;
         int saturation;
-        int num_lit;
-}
+};
 
 #endif

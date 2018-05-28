@@ -26,13 +26,13 @@ class Mode {
         Mode(CRGB* leds_);
         virtual void update(unsigned long current_millis) = 0;
         virtual void initialise(unsigned long current_millis) = 0;
-        void pot_0(int value) {}
-        void pot_1(int value) {}
-        void pot_2(int value) {}
-        void pot_3(int value) {}
-        void pot_4(int value) {}
-        void button_0_pressed() {}
-        void button_0_released() {}
+        virtual void pot_0(uint16_t value) {}
+        virtual void pot_1(uint16_t value) {}
+        virtual void pot_2(uint16_t value) {}
+        virtual void pot_3(uint16_t value) {}
+        virtual void pot_4(uint16_t value) {}
+        virtual void button_0_pressed() {}
+        virtual void button_0_released() {}
     protected:
         void constructor_defaults();
         CRGB * leds;
