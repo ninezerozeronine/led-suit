@@ -26,18 +26,17 @@ class Mode {
         Mode(CRGB* leds_);
         virtual void update(unsigned long current_millis) = 0;
         virtual void initialise(unsigned long current_millis) = 0;
-        virtual void initialise_pot_0(unsigned long current_millis) {}
-        virtual void initialise_pot_1(unsigned long current_millis) {}
-        virtual void initialise_pot_2(unsigned long current_millis) {}
-        virtual void initialise_pot_3(unsigned long current_millis) {}
-        virtual void initialise_pot_4(unsigned long current_millis) {}
-        virtual void initialise_button_0(unsigned long current_millis) {}
-
-        virtual void process_new_pot_0_value(uint16_t value) {}
-        virtual void process_new_pot_1_value(uint16_t value) {}
-        virtual void process_new_pot_2_value(uint16_t value) {}
-        virtual void process_new_pot_3_value(uint16_t value) {}
-        virtual void process_new_pot_4_value(uint16_t value) {}
+        virtual void initialise_pot_0(int value) {}
+        virtual void initialise_pot_1(int value) {}
+        virtual void initialise_pot_2(int value) {}
+        virtual void initialise_pot_3(int value) {}
+        virtual void initialise_pot_4(int value) {}
+        virtual void initialise_button_0(bool state) {}
+        virtual void process_new_pot_0_value(int value) {}
+        virtual void process_new_pot_1_value(int value) {}
+        virtual void process_new_pot_2_value(int value) {}
+        virtual void process_new_pot_3_value(int value) {}
+        virtual void process_new_pot_4_value(int value) {}
         virtual void button_0_pressed() {}
         virtual void button_0_released() {}
     protected:

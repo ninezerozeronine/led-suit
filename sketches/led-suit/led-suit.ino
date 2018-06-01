@@ -61,18 +61,20 @@ void setup() {
     }
 
     current_mode_ptr = new LightOnPress(leds);
+    
 }
+
 
 void loop() {
     Serial.println(freeMemory());
 
     unsigned long current_millis = millis();
 
-    pot_0.update(&pot_0_updated);
-    pot_1.update(&pot_1_updated);
-    pot_2.update(&pot_2_updated);
-    pot_3.update(&pot_3_updated);
-    pot_4.update(&pot_4_updated);
+    pot_0.update(&pot_0_has_new_value);
+    pot_1.update(&pot_1_has_new_value);
+    pot_2.update(&pot_2_has_new_value);
+    pot_3.update(&pot_3_has_new_value);
+    pot_4.update(&pot_4_has_new_value);
     button_0.update(&button_0_pressed, &button_0_released);
 
     current_mode_ptr->update(current_millis);
@@ -81,12 +83,57 @@ void loop() {
     FastLED.setMaxPowerInVoltsAndMilliamps(5, 1000);
     FastLED.show();
 
-    mode_change_button.update(&next_mode);
+
+    mode_change_button.update(&delete_current_mode);
+    if (current_mode_ptr == NULL) {
+        activate_next_mode();
+        initialise_mode(current_millis);
+    }
 }
 
 
-void next_mode(){
+void pot_0_has_new_value(uint16_t new_val) {
+    current_mode_ptr->process_new_pot_0_value(new_val);
+}
+
+
+void pot_1_has_new_value(uint16_t new_val) {
+    current_mode_ptr->process_new_pot_1_value(new_val);
+}
+
+
+void pot_2_has_new_value(uint16_t new_val) {
+    current_mode_ptr->process_new_pot_2_value(new_val);
+}
+
+
+void pot_3_has_new_value(uint16_t new_val) {
+    current_mode_ptr->process_new_pot_3_value(new_val);
+}
+
+
+void pot_4_has_new_value(uint16_t new_val) {
+    current_mode_ptr->process_new_pot_4_value(new_val);
+}
+
+
+void button_0_pressed() {
+    current_mode_ptr->button_0_pressed();
+}
+
+
+void button_0_released() {
+    current_mode_ptr->button_0_released();
+}
+
+
+void delete_current_mode() {
     delete current_mode_ptr;
+    current_mode_ptr = NULL;
+}
+
+
+void activate_next_mode() {
     current_mode = (current_mode + 1) % num_modes;
     switch (current_mode){
         case 0:
@@ -99,30 +146,12 @@ void next_mode(){
 }
 
 
-void pot_0_updated(uint16_t new_val){
-    current_mode_ptr->pot_0(new_val);
-}
-
-void pot_1_updated(uint16_t new_val){
-    current_mode_ptr->pot_1(new_val);
-}
-
-void pot_2_updated(uint16_t new_val){
-    current_mode_ptr->pot_2(new_val);
-}
-
-void pot_3_updated(uint16_t new_val){
-    current_mode_ptr->pot_3(new_val);
-}
-
-void pot_4_updated(uint16_t new_val){
-    current_mode_ptr->pot_4(new_val);
-}
-
-void button_0_pressed(){
-    current_mode_ptr->button_0_pressed();
-}
-
-void button_0_released(){
-    current_mode_ptr->button_0_released();
+void initialise_mode(unsigned long current_millis) {
+    current_mode_ptr->initialise(current_millis);
+    current_mode_ptr->initialise_pot_0(pot_0.get_value());
+    current_mode_ptr->initialise_pot_1(pot_1.get_value());
+    current_mode_ptr->initialise_pot_2(pot_2.get_value());
+    current_mode_ptr->initialise_pot_3(pot_3.get_value());
+    current_mode_ptr->initialise_pot_4(pot_4.get_value());
+    current_mode_ptr->initialise_button_0(button_0.is_pressed());
 }

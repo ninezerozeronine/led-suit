@@ -10,8 +10,8 @@ LightOnPress::LightOnPress(CRGB* leds_) : Mode(leds_) {
 }
 
 
-void LightOnPress::initialise(unsigned long current_millis) {
-
+void LightOnPress::constructor_defaults(){
+    button_pressed = false;
 }
 
 
@@ -26,6 +26,15 @@ void LightOnPress::update(unsigned long current_millis){
 }
 
 
+void LightOnPress::initialise(unsigned long current_millis) {
+
+}
+
+void LightOnPress::initialise_button_0(bool state) {
+    button_pressed = state;
+}
+
+
 void LightOnPress::button_0_pressed(){
     button_pressed = true;
 }
@@ -36,6 +45,3 @@ void LightOnPress::button_0_released(){
 }
 
 
-void LightOnPress::constructor_defaults(){
-    button_pressed = false;
-}
