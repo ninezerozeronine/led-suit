@@ -16,7 +16,7 @@ void LinearFill::initialise(unsigned long current_millis) {
 
 
 void LinearFill::update(unsigned long current_millis){
-    for (int index = 0; index < NUM_LEDS; index++) {
+    for (int index = 0; index < constants::NUM_LEDS; index++) {
         if (index < num_lit) {
             leds[index].setHSV(hue, saturation, 255);
         } else {
@@ -27,7 +27,7 @@ void LinearFill::update(unsigned long current_millis){
 
 
 void LinearFill::pot_0(uint16_t value){
-    num_lit = map(value, 0, 1023, 0, NUM_LEDS);
+    num_lit = map(value, 0, 1023, 0, constants::NUM_LEDS);
 }
 
 

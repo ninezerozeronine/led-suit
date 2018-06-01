@@ -1,6 +1,7 @@
 #ifndef LINEAR_FILL_H
 #define LINEAR_FILL_H
 
+#include <Arduino.h>
 #include "mode.h"
 #include "constants.h"
 
