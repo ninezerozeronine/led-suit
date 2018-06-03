@@ -15,10 +15,13 @@ class LinearFill: public Mode {
         virtual void initialise_pot_1(int value);
         virtual void initialise_pot_2(int value);
         virtual void process_new_pot_0_value(int value);
-        virtual void process_new_pot_0_value(int value);
-        virtual void process_new_pot_0_value(int value);
+        virtual void process_new_pot_1_value(int value);
+        virtual void process_new_pot_2_value(int value);
     private:
         void constructor_defaults();
+        int map_pot_0_value(int value);
+        int map_pot_1_value(int value);
+        int map_pot_2_value(int value);
         int num_lit;
         int hue;
         int saturation;

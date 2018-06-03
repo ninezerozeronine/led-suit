@@ -31,7 +31,6 @@ class Mode {
         virtual void initialise_pot_2(unsigned long current_millis) {}
         virtual void initialise_pot_3(unsigned long current_millis) {}
         virtual void initialise_pot_4(unsigned long current_millis) {}
-        virtual void initialise_button_0(unsigned long current_millis) {}
 
         virtual void process_new_pot_0_value(int value) {}
         virtual void process_new_pot_1_value(int value) {}
