@@ -40,7 +40,7 @@ Button mode_change_button(constants::MODE_CHANGE_PIN);
 Mode * current_mode_ptr;
 
 int num_modes = 2;
-int current_mode = 0;
+int current_mode = num_modes - 1;
 
 void setup() {
     Serial.begin(9600);
@@ -62,7 +62,9 @@ void setup() {
         leds[index] = CRGB::Red;
     }
 
-    current_mode_ptr = new LightOnPress(leds);
+    current_mode_ptr = NULL;
+    setup_next_mode();
+    initialise_current_mode();
 }
 
 void loop() {
@@ -83,12 +85,19 @@ void loop() {
     FastLED.setMaxPowerInVoltsAndMilliamps(5, 1000);
     FastLED.show();
 
-    mode_change_button.update(&next_mode);
+    mode_change_button.update(&delete_current_mode);
+    if (current_mode_ptr == NULL) {
+        setup_next_mode();
+        initialise_current_mode();
+    }
 }
 
-
-void next_mode(){
+void delete_current_mode(){
     delete current_mode_ptr;
+    current_mode_ptr = NULL;
+}
+
+void setup_next_mode(){
     current_mode = (current_mode + 1) % num_modes;
     switch (current_mode){
         case 0:
@@ -100,6 +109,14 @@ void next_mode(){
     }
 }
 
+void initialise_current_mode() {
+    current_mode_ptr->initialise(millis());
+    current_mode_ptr->initialise_pot_0(pot_0.get_value());
+    current_mode_ptr->initialise_pot_1(pot_1.get_value());
+    current_mode_ptr->initialise_pot_2(pot_2.get_value());
+    current_mode_ptr->initialise_pot_3(pot_3.get_value());
+    current_mode_ptr->initialise_pot_4(pot_4.get_value());
+}
 
 void pot_0_updated(int new_val){
     current_mode_ptr->process_new_pot_0_value(new_val);
