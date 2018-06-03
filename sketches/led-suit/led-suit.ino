@@ -46,6 +46,8 @@ void setup() {
     Serial.begin(9600);
     FastLED.addLeds<NEOPIXEL, constants::LED_DATA_PIN>(leds, constants::NUM_LEDS);
 
+    unsigned long current_millis = millis();
+
     pot_0.init();
     pot_1.init();
     pot_2.init();
@@ -99,24 +101,24 @@ void next_mode(){
 }
 
 
-void pot_0_updated(uint16_t new_val){
-    current_mode_ptr->pot_0(new_val);
+void pot_0_updated(int new_val){
+    current_mode_ptr->process_new_pot_0_value(new_val);
 }
 
-void pot_1_updated(uint16_t new_val){
-    current_mode_ptr->pot_1(new_val);
+void pot_1_updated(int new_val){
+    current_mode_ptr->process_new_pot_1_value(new_val);
 }
 
-void pot_2_updated(uint16_t new_val){
-    current_mode_ptr->pot_2(new_val);
+void pot_2_updated(int new_val){
+    current_mode_ptr->process_new_pot_2_value(new_val);
 }
 
-void pot_3_updated(uint16_t new_val){
-    current_mode_ptr->pot_3(new_val);
+void pot_3_updated(int new_val){
+    current_mode_ptr->process_new_pot_3_value(new_val);
 }
 
-void pot_4_updated(uint16_t new_val){
-    current_mode_ptr->pot_4(new_val);
+void pot_4_updated(int new_val){
+    current_mode_ptr->process_new_pot_4_value(new_val);
 }
 
 void button_0_pressed(){
