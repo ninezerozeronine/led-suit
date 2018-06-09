@@ -31,6 +31,7 @@ class Mode {
         virtual void initialise_pot_2(int value) {}
         virtual void initialise_pot_3(int value) {}
         virtual void initialise_pot_4(int value) {}
+        virtual void initialise_button_0(byte state) {}
 
         virtual void process_new_pot_0_value(int value) {}
         virtual void process_new_pot_1_value(int value) {}

@@ -39,8 +39,8 @@ Button mode_change_button(constants::MODE_CHANGE_PIN);
 
 Mode * current_mode_ptr;
 
-int num_modes = 2;
-int current_mode = num_modes - 1;
+byte num_modes = 2;
+byte current_mode = num_modes - 1;
 
 void setup() {
     Serial.begin(9600);
@@ -93,8 +93,10 @@ void loop() {
 }
 
 void delete_current_mode(){
-    delete current_mode_ptr;
-    current_mode_ptr = NULL;
+    if (current_mode_ptr != NULL) {
+        delete current_mode_ptr;
+        current_mode_ptr = NULL;
+    }
 }
 
 void setup_next_mode(){
@@ -116,6 +118,7 @@ void initialise_current_mode() {
     current_mode_ptr->initialise_pot_2(pot_2.get_value());
     current_mode_ptr->initialise_pot_3(pot_3.get_value());
     current_mode_ptr->initialise_pot_4(pot_4.get_value());
+    current_mode_ptr->initialise_button_0(button_0.get_state());
 }
 
 void pot_0_updated(int new_val){

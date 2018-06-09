@@ -15,7 +15,7 @@ Button::Button() {
 // low_to_high_callback - the callback to call when the button goes from unpressed to pressed
 // high_to_low_callback - the callback to call when the button goes from pressed to unpressed
 Button::Button(byte pin_, byte debounce_time_) {
-    constructor_defaults()
+    constructor_defaults();
     set_pin(pin_);
     set_debounce_time(debounce_time_);
 }
@@ -44,14 +44,14 @@ byte Button::get_state(){
 // Note that we're using INPUT_PULLUP to save on having to add a resistor
 void Button::init() {
     pinMode(pin, INPUT_PULLUP);
-    stable_state, last_read_state = !digitalRead(_pin);
+    stable_state, last_read_state = !digitalRead(pin);
     last_state_change = millis();
 }
 
 // Update the button each time round the main loop
 void Button::update(void (*low_to_high_callback)(), void (*high_to_low_callback)()) {
     // Read state of the button (invert because we're using INPUT_PULLUP)
-    byte current_state = !digitalRead(_pin);
+    byte current_state = !digitalRead(pin);
 
     // If the button is in a different state to the stable state
     if (current_state != stable_state) {
