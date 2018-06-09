@@ -1,31 +1,37 @@
 // Convenience class to use a button with Arduino
 
-#ifndef button_h
-#define button_h
+#ifndef BUTTON_H
+#define BUTTON_H
 
 #include "Arduino.h"
 
 class Button {
     public:
-        Button(uint8_t pin, uint8_t debounce_time=10);
+        Button();
+        Button(byte pin_, byte debounce_time_=10);
         void init();
+        void set_pin(byte pin_);
+        void set_debounce_time(byte debounce_time);
+        byte get_state();
         void update(void (*low_to_high_callback)()=NULL, void (*high_to_low_callback)()=NULL);
 
     private:
+        void constructor_defaults();
+
         // The pin this button is connected to
-        uint8_t _pin;
+        byte pin;
   
         // The time in milliseconds for the state to be held before considering it to be on
-        uint8_t _debounce_time;
+        byte debounce_time;
 
         // Whether the button is pressed or not
-        bool _is_pressed;
+        byte stable_state;
     
         // The state of the pin read at the last update
-        bool _last_state;
+        byte last_read_state;
     
-        // When the button last transitioned from low to high (without bouncing)
-        unsigned long _last_state_change;
+        // When the button last changes state (as directly read)
+        unsigned long last_state_change;
 };
 
 #endif

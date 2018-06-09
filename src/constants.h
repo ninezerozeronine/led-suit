@@ -4,6 +4,11 @@
 #include <Arduino.h>
 
 namespace constants {
+    // We need to define this here as extern consts are not compile time
+    // constants so we can't initialise arrays with them.
+    //
+    // FastLED.addLeds also seems to befussy about the data pin it's
+    // passed
     const int NUM_LEDS = 256;
     const byte LED_DATA_PIN = 2;
 
