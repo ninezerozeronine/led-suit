@@ -1,17 +1,19 @@
 /*
-Mode instances:
+Mode ideas
 
-Initial
--------
-* Must have an update method that is passed the current time
-* Have functions that will be called when buttons are pressed or potentiometers adjusted.
-* Are expected to set the LED array in the update method (but not show it)
-* Must be dynamically creatable and deletable
+* Light on press
+* Light up 1-n LEDs controlling hue, saturation and value
+* Light worms that move on a grid and have a trail
+* Light streaks that move in one direction
+* Pulse that eminates from the centre outwards (hard/soft, speed, hue, sat)
+* Stripes that move horizontally or vertically (hard/soft, speed, hue, sat)
+* looping horizontal/vertical rainbow (speed)
+* Pulsing solid colour (hard/soft, speed, hue, sat)
+* Perlin noise colour (speed)
+* Write a message
 
-Stretch
--------
-* Must have a name
-* Must give descriptions of what each button and pot do (for the screen!)
+
+
 */
 
 #ifndef MODE_H

@@ -47,7 +47,7 @@ void LinearFill::initialise_pot_2(int value) {
 
 
 void LinearFill::process_new_pot_0_value(int value){
-    num_lit = map_pot_1_value(value);
+    num_lit = map_pot_0_value(value);
 }
 
 

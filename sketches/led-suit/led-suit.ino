@@ -16,14 +16,14 @@ extern char *__brkval;
 #endif  // __arm__
  
 int freeMemory() {
-  char top;
-#ifdef __arm__
-  return &top - reinterpret_cast<char*>(sbrk(0));
-#elif defined(CORE_TEENSY) || (ARDUINO > 103 && ARDUINO != 151)
-  return &top - __brkval;
-#else  // __arm__
-  return __brkval ? &top - __brkval : &top - __malloc_heap_start;
-#endif  // __arm__
+    char top;
+    #ifdef __arm__
+        return &top - reinterpret_cast<char*>(sbrk(0));
+    #elif defined(CORE_TEENSY) || (ARDUINO > 103 && ARDUINO != 151)
+        return &top - __brkval;
+    #else  // __arm__
+        return __brkval ? &top - __brkval : &top - __malloc_heap_start;
+    #endif  // __arm__
 }
 
 CRGB leds[constants::NUM_LEDS];
@@ -68,8 +68,9 @@ void setup() {
 }
 
 void loop() {
-    Serial.println(freeMemory());
-
+    // Serial.println(freeMemory());
+    Serial.println(constants::NUM_LEDS);
+    
     unsigned long current_millis = millis();
 
     pot_0.update(&pot_0_updated);
