@@ -7,6 +7,7 @@
 
 #include "light_on_press.h"
 #include "linear_fill.h"
+#include "rainbow_loop.h"
 
 #ifdef __arm__
 // should use uinstd.h to define sbrk but Due causes a conflict
@@ -39,7 +40,7 @@ Button mode_change_button(constants::MODE_CHANGE_PIN);
 
 Mode * current_mode_ptr;
 
-byte num_modes = 2;
+byte num_modes = 3;
 byte current_mode = num_modes - 1;
 
 void setup() {
@@ -69,7 +70,6 @@ void setup() {
 
 void loop() {
     // Serial.println(freeMemory());
-    Serial.println(constants::NUM_LEDS);
     
     unsigned long current_millis = millis();
 
@@ -108,6 +108,9 @@ void setup_next_mode(){
             break;
         case 1:
             current_mode_ptr = new LinearFill(leds);
+            break;
+        case 2:
+            current_mode_ptr = new RainbowLoop(leds);
             break;
     }
 }
