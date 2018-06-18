@@ -82,8 +82,8 @@ void loop() {
 
     current_mode_ptr->update(current_millis);
 
-    FastLED.setBrightness(128);
-    FastLED.setMaxPowerInVoltsAndMilliamps(5, 1000);
+    FastLED.setBrightness(32);
+    // FastLED.setMaxPowerInVoltsAndMilliamps(5, 1000);
     FastLED.show();
 
     mode_change_button.update(&delete_current_mode);

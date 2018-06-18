@@ -28,6 +28,7 @@ class RainbowLoop: public Mode {
 
         UnitOffset unit_offset;
         int width;
+        float base_speed;
 };
 
 #endif
