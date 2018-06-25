@@ -1,7 +1,7 @@
 #include <FastLED.h>
 #include <Arduino.h>
 
-#define NUM_LEDS 256
+#define NUM_LEDS 150
 #define DATA_PIN 2
 
 CRGB leds[NUM_LEDS];
@@ -66,22 +66,22 @@ void num_and_hsv(){
     unsigned long current_millis = millis();
     if (last_millis - current_millis > 10) {
         uint16_t num_pot = analogRead(A0);
-        uint16_t brightness_pot = analogRead(A1);
-        uint16_t hue_pot = analogRead(A2);
-        uint16_t saturation_pot = analogRead(A3);
+        uint16_t hue_pot = analogRead(A1);
+        uint16_t saturation_pot = analogRead(A2);
+        uint16_t brightness_pot = analogRead(A3);
 
         num_lit = map(num_pot, 0, 1023, 0, NUM_LEDS);
         brightness = map(brightness_pot, 0, 1023, 0, 255);
         hue = map(hue_pot, 0, 1023, 0, 255);
         saturation = map(saturation_pot, 0, 1023, 0, 255);
 
-        Serial.print(num_lit);
-        Serial.print(",");
-        Serial.print(brightness);
-        Serial.print(",");
-        Serial.print(hue);
-        Serial.print(",");
-        Serial.println(saturation);
+        // Serial.print(num_lit);
+        // Serial.print(",");
+        // Serial.print(brightness);
+        // Serial.print(",");
+        // Serial.print(hue);
+        // Serial.print(",");
+        // Serial.println(saturation);
     }
 
     for(int index = 0; index < NUM_LEDS; index++) {
