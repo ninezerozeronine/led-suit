@@ -1,11 +1,12 @@
 #include "constants.h"
 
 namespace constants {
-    extern const byte POT_0_PIN = A0;
-    extern const byte POT_1_PIN = A1;
-    extern const byte POT_2_PIN = A2;
-    extern const byte POT_3_PIN = A3;
-    extern const byte POT_4_PIN = A6;
+    extern const byte BRIGHTNESS_POT_PIN = A0;
+    extern const byte POT_0_PIN = A1;
+    extern const byte POT_1_PIN = A2;
+    extern const byte POT_2_PIN = A3;
+    extern const byte POT_3_PIN = A4;
+    extern const byte POT_4_PIN = A5;
     extern const byte BUTTON_0_PIN = 4;
 
     extern const byte MODE_CHANGE_PIN = 3;

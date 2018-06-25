@@ -1,6 +1,6 @@
 #include "linear_fill.h"
 
-LinearFill::LinearFill() {
+LinearFill::LinearFill() : Mode() {
     constructor_defaults();
 }
 

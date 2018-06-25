@@ -1,6 +1,6 @@
 #include "light_on_press.h"
 
-LightOnPress::LightOnPress() {
+LightOnPress::LightOnPress() : Mode() {
     constructor_defaults();
 }
 
