@@ -5,9 +5,9 @@
 #include "potentiometer.h"
 #include "button.h"
 
-#include "light_on_press.h"
-#include "linear_fill.h"
-#include "rainbow_loop.h"
+#include "modes/light_on_press.h"
+#include "modes/linear_fill.h"
+#include "modes/rainbow_loop.h"
 
 #ifdef __arm__
 // should use uinstd.h to define sbrk but Due causes a conflict
@@ -71,7 +71,6 @@ void setup() {
 void loop() {
     // Serial.println(freeMemory());
     
-    unsigned long current_millis = millis();
 
     pot_0.update(&pot_0_updated);
     pot_1.update(&pot_1_updated);
@@ -80,10 +79,11 @@ void loop() {
     pot_4.update(&pot_4_updated);
     button_0.update(&button_0_pressed, &button_0_released);
 
-    current_mode_ptr->update(current_millis);
+    current_mode_ptr->update();
+    current_mode_ptr->apply_to_leds();
 
-    FastLED.setBrightness(32);
-    // FastLED.setMaxPowerInVoltsAndMilliamps(5, 1000);
+    // FastLED.setBrightness(32);
+    FastLED.setMaxPowerInVoltsAndMilliamps(5, 1000);
     FastLED.show();
 
     mode_change_button.update(&delete_current_mode);
@@ -116,7 +116,7 @@ void setup_next_mode(){
 }
 
 void initialise_current_mode() {
-    current_mode_ptr->initialise(millis());
+    current_mode_ptr->initialise();
     current_mode_ptr->initialise_pot_0(pot_0.get_value());
     current_mode_ptr->initialise_pot_1(pot_1.get_value());
     current_mode_ptr->initialise_pot_2(pot_2.get_value());

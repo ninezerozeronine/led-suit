@@ -1,4 +1,4 @@
-#include "mode.h"
+#include "mode_base.h"
 
 Mode::Mode() {
     constructor_defaults();

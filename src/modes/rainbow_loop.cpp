@@ -13,7 +13,7 @@ void RainbowLoop::constructor_defaults(){
     set_width(255);
 }
 
-void RainbowLoop::initialise(unsigned long current_millis) {
+void RainbowLoop::initialise() {
     unit_offset.init();
 }
 
@@ -25,8 +25,11 @@ void RainbowLoop::initialise_pot_1(int value) {
     set_width(map_pot_1_value(value));
 }
 
-void RainbowLoop::update(unsigned long current_millis) {
+void RainbowLoop::update() {
     unit_offset.update();
+}
+
+void RainbowLoop::apply_to_leds() {
     for (int index = 0; index < constants::NUM_LEDS; index++) {
         int pattern_pos = output_to_pattern(pgm_read_byte_near(constants::LED_Y_VALS + index), width);
         float unit_position = pattern_to_unit(pattern_pos, width);
@@ -56,17 +59,19 @@ void RainbowLoop::process_new_pot_1_value(int value){
 }
 
 float RainbowLoop::map_pot_0_value(int value) {
-    // Speed
-    int dead_min = 500;
-    int dead_max = 520;
-    float speed;
+    int potentiometer_max = 1023;
+    int deadband_width = 30;
+    int mid_point = potentiometer_max/2;
+    int dead_min = mid_point - deadband_width/2;
+    int dead_max = mid_point + deadband_width/2;
+    float speed = 0;
     if (value < dead_min) {
         int dist_from_dead_min = dead_min - value;
         float normalised = float(dist_from_dead_min) / float(dead_min);
         speed = -1.0 * normalised;
     } else if (value > dead_max) {
         int dist_from_dead_max = value - dead_max;
-        speed = float(dist_from_dead_max) / float(1023 - dead_max);
+        speed = float(dist_from_dead_max) / float(potentiometer_max - dead_max);
     }
     return speed;
 }
@@ -86,14 +91,14 @@ float RainbowLoop::pattern_to_unit(int position, int length) {
 
 CHSV RainbowLoop::unit_to_rainbow(float position) {
     // Rainbow
-    // byte hue = 255 * position;
-    // return CHSV(hue, 255, 255);
-
-    // Harsh rainbow
-    int num_stripes = 6;
-    position = position * num_stripes;
-    byte hue = 255.0/float(num_stripes) * int(position);
+    byte hue = 255 * position;
     return CHSV(hue, 255, 255);
+
+    //  Harsh rainbow
+    // int num_stripes = 6;
+    // position = position * num_stripes;
+    // byte hue = 255.0/float(num_stripes) * int(position);
+    // return CHSV(hue, 255, 255);
 
     // Stripes
     // if (position > 0.5) {
