@@ -8,7 +8,7 @@
 class LoopTimer {
     public:
         LoopTimer();
-        LoopTimer(int _loops_to_count);
+        LoopTimer(int loops_to_count_);
         void update();
         float get_loop_time();
 

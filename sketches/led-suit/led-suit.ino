@@ -4,11 +4,13 @@
 #include "constants.h"
 #include "potentiometer.h"
 #include "button.h"
+#include "loop_timer.h"
 
 #include "modes/light_on_press.h"
 #include "modes/linear_fill.h"
 #include "modes/soft_rainbow_loop.h"
 #include "modes/hard_rainbow_loop.h"
+#include "modes/perlin.h"
 
 #ifdef __arm__
 // should use uinstd.h to define sbrk but Due causes a conflict
@@ -41,7 +43,11 @@ Button mode_change_button(constants::MODE_CHANGE_PIN);
 
 Mode * current_mode_ptr;
 
-byte num_modes = 4;
+unsigned long last_loop_print = 0;
+unsigned long loop_print_interval = 200;
+LoopTimer loop_timer;
+
+byte num_modes = 5;
 byte current_mode = num_modes - 1;
 
 void setup() {
@@ -70,7 +76,14 @@ void setup() {
 }
 
 void loop() {
-    Serial.println(freeMemory());
+    // Serial.println(freeMemory());
+
+    loop_timer.update();
+    unsigned long current_millis = millis();
+    if ((current_millis - last_loop_print) > loop_print_interval) {
+        Serial.println(loop_timer.get_loop_time());
+        last_loop_print = current_millis;
+    }
     
     brightness_pot.update();
     pot_0.update(&pot_0_updated);
@@ -115,6 +128,9 @@ void setup_next_mode(){
             break;
         case 3:
             current_mode_ptr = new HardRainbowLoop(leds);
+            break;
+        case 4:
+            current_mode_ptr = new Perlin(leds);
             break;
     }
 }
