@@ -9,6 +9,7 @@ LoopModeBase::LoopModeBase(CRGB* leds_) : Mode(leds_) {
 }
 
 void LoopModeBase::constructor_defaults(){
+    current_mode = 0;
     base_speed = 0;
     set_pattern_width(255);
 }
@@ -25,17 +26,102 @@ void LoopModeBase::initialise_pot_1(int value) {
     set_pattern_width(map_pot_1_value(value));
 }
 
+void LoopModeBase::button_0_pressed() {
+    set_next_mode();
+}
+
 void LoopModeBase::update() {
     unit_offset.update();
 }
 
-void LoopModeBase::apply_to_leds() {
+void LoopModeBase::apply_to_leds_vert() {
     for (int index = 0; index < constants::NUM_LEDS; index++) {
         int pattern_pos = output_to_pattern(pgm_read_byte_near(constants::LED_Y_VALS + index));
         float unit_position = pattern_to_unit(pattern_pos);
         float offset_unit = unit_offset.apply_offset(unit_position);
         CHSV colour = pattern_colour_lookup(offset_unit);
         leds[index] = colour;
+    }
+}
+
+
+void LoopModeBase::apply_to_leds_vert_split() {
+    // Split the pattern in the middle and mirror it, e.g. if there were 8 positions:
+    // 7 -> 3
+    // 6 -> 2
+    // 5 -> 1
+    // 4 -> 0
+    // 3 -> 1
+    // 2 -> 2
+    // 1 -> 3
+    // 0 -> 4
+    for (int index = 0; index < constants::NUM_LEDS; index++) {
+        int output_pos = pgm_read_byte_near(constants::LED_Y_VALS + index);
+        int remapped_pos = 0;
+        if (output_pos <= 127) {
+            remapped_pos = 128 - output_pos;
+        } else {
+            remapped_pos = output_pos - 128;
+        }
+        int pattern_pos = output_to_pattern(remapped_pos);
+        float unit_position = pattern_to_unit(pattern_pos);
+        float offset_unit = unit_offset.apply_offset(unit_position);
+        CHSV colour = pattern_colour_lookup(offset_unit);
+        leds[index] = colour;
+    }
+}
+
+void LoopModeBase::apply_to_leds_horiz() {
+    for (int index = 0; index < constants::NUM_LEDS; index++) {
+        int pattern_pos = output_to_pattern(pgm_read_byte_near(constants::LED_X_VALS + index));
+        float unit_position = pattern_to_unit(pattern_pos);
+        float offset_unit = unit_offset.apply_offset(unit_position);
+        CHSV colour = pattern_colour_lookup(offset_unit);
+        leds[index] = colour;
+    }
+}
+
+
+void LoopModeBase::apply_to_leds_horiz_split() {
+    // Split the pattern in the middle and mirror it, e.g. if there were 8 positions:
+    // 7 -> 3
+    // 6 -> 2
+    // 5 -> 1
+    // 4 -> 0
+    // 3 -> 1
+    // 2 -> 2
+    // 1 -> 3
+    // 0 -> 4
+    for (int index = 0; index < constants::NUM_LEDS; index++) {
+        int output_pos = pgm_read_byte_near(constants::LED_X_VALS + index);
+        int remapped_pos = 0;
+        if (output_pos <= 127) {
+            remapped_pos = 128 - output_pos;
+        } else {
+            remapped_pos = output_pos - 128;
+        }
+        int pattern_pos = output_to_pattern(remapped_pos);
+        float unit_position = pattern_to_unit(pattern_pos);
+        float offset_unit = unit_offset.apply_offset(unit_position);
+        CHSV colour = pattern_colour_lookup(offset_unit);
+        leds[index] = colour;
+    }
+}
+
+void LoopModeBase::apply_to_leds(){
+    switch(current_mode){
+        case 0:
+            apply_to_leds_vert();
+            break;
+        case 1:
+            apply_to_leds_vert_split();
+            break;
+        case 2:
+            apply_to_leds_horiz();
+            break;
+        case 3:
+            apply_to_leds_horiz_split();
+            break;
     }
 }
 
@@ -87,4 +173,8 @@ int LoopModeBase::output_to_pattern(int output) {
 
 float LoopModeBase::pattern_to_unit(int position) {
     return float(position) / float(pattern_width);
+}
+
+void LoopModeBase::set_next_mode() {
+    current_mode = (current_mode + 1) % NUM_LOOP_MODES;
 }
