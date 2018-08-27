@@ -12,6 +12,9 @@ namespace constants {
     const int NUM_LEDS = 366;
     const byte LED_DATA_PIN = 2;
 
+    extern const byte GRID_WIDTH;
+    extern const byte GRID_HEIGHT;
+
     extern const byte BRIGHTNESS_POT_PIN;
     extern const byte POT_0_PIN;
     extern const byte POT_1_PIN;

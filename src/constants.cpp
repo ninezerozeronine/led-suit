@@ -1,6 +1,10 @@
 #include "constants.h"
 
 namespace constants {
+
+    extern const byte GRID_WIDTH = 10;
+    extern const byte GRID_HEIGHT = 60;
+
     extern const byte BRIGHTNESS_POT_PIN = A0;
     extern const byte POT_0_PIN = A1;
     extern const byte POT_1_PIN = A2;
