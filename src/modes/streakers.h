@@ -2,6 +2,7 @@
 #define STREAKERS_H
 
 #define NUM_STREAKERS 10
+// In 255ths
 #define FADE_AMOUNT 1
 #define FADE_INTERVAL 10
 

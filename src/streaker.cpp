@@ -8,9 +8,13 @@ void Streaker::constructor_defaults() {
     leds = NULL;
     speed = 0.001;
     hue = 0;
-    width = 5;
-    height = 5;
+    width = constants::GRID_WIDTH;
+    height = constants::GRID_HEIGHT;
     last_update = 0;
+
+    y = random(height);
+    move_to_new_column();
+    randomise_speed();
 }
 
 
