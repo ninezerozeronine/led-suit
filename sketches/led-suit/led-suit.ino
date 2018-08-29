@@ -101,7 +101,7 @@ void loop() {
 
     int brightness = map(brightness_pot.get_value(), 0, 1023, 0, 255);
     FastLED.setBrightness(brightness);
-    FastLED.setMaxPowerInVoltsAndMilliamps(5, 1000);
+    FastLED.setMaxPowerInVoltsAndMilliamps(5, 4000);
     FastLED.show();
 
     mode_change_button.update(&delete_current_mode);
