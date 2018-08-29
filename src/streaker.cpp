@@ -11,10 +11,6 @@ void Streaker::constructor_defaults() {
     width = constants::GRID_WIDTH;
     height = constants::GRID_HEIGHT;
     last_update = 0;
-
-    y = random(height);
-    move_to_new_column();
-    randomise_speed();
 }
 
 
@@ -47,6 +43,9 @@ void Streaker::set_height(byte _height) {
 }
 
 void Streaker::initialise() {
+    y = random(height);
+    move_to_new_column();
+    randomise_speed();
     last_update = millis();
 }
 

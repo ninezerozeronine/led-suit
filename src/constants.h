@@ -26,6 +26,8 @@ namespace constants {
 
     extern const byte LED_X_VALS[];
     extern const byte LED_Y_VALS[];
+
+    extern const byte LED_GRID_INDECIES[];
 }
 
 #endif
