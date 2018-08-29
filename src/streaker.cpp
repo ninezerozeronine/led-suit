@@ -27,7 +27,7 @@ void Streaker::randomise_speed() {
     int amount = random(40);
     amount -= 20;
     float percentage = float(amount)/100;
-    speed = speed * percentage;
+    speed = speed + (speed * percentage);
 }
 
 void Streaker::set_hue(byte _hue) {
@@ -50,12 +50,14 @@ void Streaker::initialise() {
 }
 
 void Streaker::update() {
-    unsigned long elapsed_millis = millis() - last_update;
+    unsigned long current_millis = millis();
+    unsigned long elapsed_millis = current_millis - last_update;
     y += float(elapsed_millis) * speed;
     if (y > float(height)) {
         y = 0;
         move_to_new_column();
     }
+    last_update = current_millis;
 }
 
 void Streaker::move_to_new_column() {

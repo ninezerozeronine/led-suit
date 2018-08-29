@@ -1,3 +1,6 @@
+#define NUM_STREAKERS 10
+
+
 #include <FastLED.h>
 #include <Arduino.h>
 

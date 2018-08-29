@@ -30,5 +30,6 @@ class Streaker {
         float y;
 
         void move_to_new_column();
+};
 
 #endif
