@@ -1,3 +1,6 @@
+#define NUM_STREAKERS 10
+
+
 #include <FastLED.h>
 #include <Arduino.h>
 
@@ -11,6 +14,7 @@
 #include "modes/soft_rainbow_loop.h"
 #include "modes/hard_rainbow_loop.h"
 #include "modes/perlin.h"
+#include "modes/streakers.h"
 
 #ifdef __arm__
 // should use uinstd.h to define sbrk but Due causes a conflict
@@ -47,7 +51,7 @@ unsigned long last_loop_print = 0;
 unsigned long loop_print_interval = 200;
 LoopTimer loop_timer;
 
-byte num_modes = 5;
+byte num_modes = 6;
 byte current_mode = num_modes - 1;
 
 void setup() {
@@ -131,6 +135,9 @@ void setup_next_mode(){
             break;
         case 4:
             current_mode_ptr = new Perlin(leds);
+            break;
+        case 5:
+            current_mode_ptr = new Streakers(leds);
             break;
     }
 }

@@ -48,7 +48,6 @@ namespace constants {
         0,   0,   0,   0,   0,   0,   0,   0
     };
 
-
     // extern const byte LED_X_VALS[NUM_LEDS] PROGMEM = {
     // //  0    1    2    3    4    5    6    7    8    9
     //     101, 101, 101, 101, 101, 101, 101, 101, 101, 101,

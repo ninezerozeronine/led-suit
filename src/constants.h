@@ -12,6 +12,9 @@ namespace constants {
     const int NUM_LEDS = 64;
     const byte LED_DATA_PIN = 2;
 
+    extern const byte GRID_WIDTH;
+    extern const byte GRID_HEIGHT;
+
     extern const byte BRIGHTNESS_POT_PIN;
     extern const byte POT_0_PIN;
     extern const byte POT_1_PIN;
@@ -23,6 +26,8 @@ namespace constants {
 
     extern const byte LED_X_VALS[];
     extern const byte LED_Y_VALS[];
+
+    extern const int LED_GRID_INDECIES[];
 }
 
 #endif
