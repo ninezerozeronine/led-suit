@@ -10,6 +10,17 @@ const char string_5[] PROGMEM = "String 5";
 const char* const string_table[] PROGMEM = {string_0, string_1, string_2, string_3, string_4, string_5};
 char buffer[30]; 
 
+const byte LETTER[8] = {
+    B00111100,
+    B01000010,
+    B01000010,
+    B01111110,
+    B01000010,
+    B01000010,
+    B01000010,
+    B01000010
+};
+
 void setup() {
     // put your setup code here, to run once:
     Serial.begin(9600);
@@ -19,6 +30,18 @@ void setup() {
     ; 
     }
     Serial.println("OK");
+
+    for (int row = 0; row < 8; row++) {
+        for (int column = 0; column < 8; column++) {
+            if (LETTER[row] >> column & 1 == 1) {
+                Serial.print("O");
+            }
+            else {
+                Serial.print(" ");
+            }
+        }
+        Serial.println("");
+    }
 }
 
 void loop() {

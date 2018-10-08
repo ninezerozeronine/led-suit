@@ -45,10 +45,13 @@ namespace constants {
 
     extern const int LED_GRID_INDECIES[];
 
+    extern const int CHAR_WIDTH;
+    extern const int CHAR_HEIGHT;
     extern const int NUM_MESSAGES;
     extern const char MESSAGE_0[];
     extern const char MESSAGE_1[];
     extern const char* const MESSAGES[];
+    extern const byte ASCII_CHARS[];
 }
 
 #endif

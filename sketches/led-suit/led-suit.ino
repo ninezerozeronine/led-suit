@@ -7,7 +7,7 @@
 #include "constants.h"
 #include "potentiometer.h"
 #include "button.h"
-#include "loop_timer.h"
+// #include "loop_timer.h"
 
 #include "modes/light_on_press.h"
 #include "modes/linear_fill.h"
@@ -15,6 +15,7 @@
 #include "modes/hard_rainbow_loop.h"
 #include "modes/perlin.h"
 #include "modes/streakers.h"
+#include "modes/text_scroller.h"
 
 #ifdef __arm__
 // should use uinstd.h to define sbrk but Due causes a conflict
@@ -47,15 +48,19 @@ Button mode_change_button(constants::MODE_CHANGE_PIN);
 
 Mode * current_mode_ptr;
 
-unsigned long last_loop_print = 0;
-unsigned long loop_print_interval = 200;
-LoopTimer loop_timer;
+// unsigned long last_loop_print = 0;
+// unsigned long loop_print_interval = 200;
+// LoopTimer loop_timer;
 
-byte num_modes = 6;
-byte current_mode = num_modes - 1;
+int num_modes = 7;
+int current_mode = num_modes - 1;
 
 void setup() {
     Serial.begin(9600);
+    // wait for serial port to connect. Needed for native USB port only
+    while (!Serial) {
+    ; 
+    }
     FastLED.addLeds<NEOPIXEL, constants::LED_DATA_PIN>(leds, constants::NUM_LEDS);
 
     unsigned long current_millis = millis();
@@ -82,12 +87,12 @@ void setup() {
 void loop() {
     // Serial.println(freeMemory());
 
-    loop_timer.update();
-    unsigned long current_millis = millis();
-    if ((current_millis - last_loop_print) > loop_print_interval) {
-        Serial.println(loop_timer.get_loop_time());
-        last_loop_print = current_millis;
-    }
+    // loop_timer.update();
+    // unsigned long current_millis = millis();
+    // if ((current_millis - last_loop_print) > loop_print_interval) {
+    //     Serial.println(loop_timer.get_loop_time());
+    //     last_loop_print = current_millis;
+    // }
     
     brightness_pot.update();
     pot_0.update(&pot_0_updated);
@@ -120,6 +125,7 @@ void delete_current_mode(){
 
 void setup_next_mode(){
     current_mode = (current_mode + 1) % num_modes;
+    Serial.println(current_mode);
     switch (current_mode){
         case 0:
             current_mode_ptr = new LightOnPress(leds);
@@ -138,6 +144,9 @@ void setup_next_mode(){
             break;
         case 5:
             current_mode_ptr = new Streakers(leds);
+            break;
+        case 6:
+            current_mode_ptr = new TextScroller(leds);
             break;
     }
 }
