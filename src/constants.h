@@ -3,13 +3,29 @@
 
 #include <Arduino.h>
 
+// #define OUTPUT_SUIT
+// #define OUTPUT_64_GRID
+#define OUTPUT_256_GRID
+
 namespace constants {
     // We need to define this here as extern consts are not compile time
     // constants so we can't initialise arrays with them.
     //
     // FastLED.addLeds also seems to be fussy about the data pin it's
     // passed
-    const int NUM_LEDS = 366;
+    #ifdef OUTPUT_SUIT
+        const int NUM_LEDS = 366;
+    #endif
+
+    #ifdef OUTPUT_64_GRID
+        const int NUM_LEDS = 64;
+    #endif
+
+    #ifdef OUTPUT_256_GRID
+        const int NUM_LEDS = 256;
+    #endif
+
+
     const byte LED_DATA_PIN = 2;
 
     extern const byte GRID_WIDTH;
@@ -28,6 +44,11 @@ namespace constants {
     extern const byte LED_Y_VALS[];
 
     extern const int LED_GRID_INDECIES[];
+
+    extern const int NUM_MESSAGES;
+    extern const char MESSAGE_0[];
+    extern const char MESSAGE_1[];
+    extern const char* const MESSAGES[];
 }
 
 #endif
