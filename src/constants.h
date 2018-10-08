@@ -9,20 +9,25 @@ namespace constants {
     //
     // FastLED.addLeds also seems to be fussy about the data pin it's
     // passed
-    const int NUM_LEDS = 256;
+    const int NUM_LEDS = 366;
     const byte LED_DATA_PIN = 2;
 
+    extern const byte GRID_WIDTH;
+    extern const byte GRID_HEIGHT;
+
+    extern const byte BRIGHTNESS_POT_PIN;
     extern const byte POT_0_PIN;
     extern const byte POT_1_PIN;
     extern const byte POT_2_PIN;
     extern const byte POT_3_PIN;
-    extern const byte POT_4_PIN;
     extern const byte BUTTON_0_PIN;
 
     extern const byte MODE_CHANGE_PIN;
 
     extern const byte LED_X_VALS[];
     extern const byte LED_Y_VALS[];
+
+    extern const int LED_GRID_INDECIES[];
 }
 
 #endif

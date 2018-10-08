@@ -26,8 +26,10 @@ class Mode {
     public:
         Mode();
         Mode(CRGB* leds_);
-        virtual void update(unsigned long current_millis) = 0;
-        virtual void initialise(unsigned long current_millis) = 0;
+        virtual void initialise() {}
+        virtual void update() {}
+        virtual void apply_to_leds() = 0;
+
         virtual void initialise_pot_0(int value) {}
         virtual void initialise_pot_1(int value) {}
         virtual void initialise_pot_2(int value) {}

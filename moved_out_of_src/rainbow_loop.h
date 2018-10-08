@@ -2,7 +2,7 @@
 #define RAINBOW_LOOP_H
 
 #include <Arduino.h>
-#include "mode.h"
+#include "mode_base.h"
 #include "constants.h"
 #include "unit_offset.h"
 
@@ -10,12 +10,13 @@ class RainbowLoop: public Mode {
     public:
         RainbowLoop();
         RainbowLoop(CRGB* leds_);
-        virtual void update(unsigned long current_millis);
-        virtual void initialise(unsigned long current_millis);
-        virtual void initialise_pot_0(int value);
-        virtual void initialise_pot_1(int value);
-        virtual void process_new_pot_0_value(int value);
-        virtual void process_new_pot_1_value(int value);
+        void update();
+        void initialise();
+        void apply_to_leds();
+        void initialise_pot_0(int value);
+        void initialise_pot_1(int value);
+        void process_new_pot_0_value(int value);
+        void process_new_pot_1_value(int value);
         void set_speed(float speed);
         void set_width(int width);
     private:

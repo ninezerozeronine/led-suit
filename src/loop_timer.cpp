@@ -1,15 +1,15 @@
 // Convenience class to see how fast the loop function is
 
-#include "loopTimer.h"
+#include "loop_timer.h"
 
 LoopTimer::LoopTimer() {
     constructor_defaults();
 }
 
 
-LoopTimer::LoopTimer(int _loops_to_count) {
+LoopTimer::LoopTimer(int loops_to_count_) {
     constructor_defaults();
-    loops_to_count = _loops_to_count;
+    loops_to_count = loops_to_count_;
 }
 
 
