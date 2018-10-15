@@ -16,62 +16,55 @@ void TextScroller::constructor_defaults() {
     num_message_columns = 0;
     top_left_pixel_row = 0;
     top_left_pixel_column = 0;
-    display_pixel_width = 16;
+    display_pixel_width = 8;
+    text_hue = 0;
+    bg_hue = 0;
+    bg_val = 0;
+    orientation = HORIZONTAL;
 }
 
 void TextScroller::initialise() {
-    // for (int offset = 0; offset < 8; offset++) {
-    //     byte char_row_byte = pgm_read_byte_near(constants::ASCII_CHARS + 16 + offset);
-    //     for (int column = 0; column < 8; column++) {
-    //         if (char_row_byte >> (7 - column) & 1 == 1) {
-    //             Serial.print("1");
-    //         }
-    //         else {
-    //             Serial.print("0");
-    //         }
-    //     }
-    //     Serial.print(" ");
-    //     Serial.println(char_row_byte);
-    // }
-
     for (int index = 0; index < constants::NUM_LEDS; index++) {
             leds[index] = CRGB::Black;
         }
     last_update = millis();
     message_index = constants::NUM_MESSAGES - 1;
-    // Serial.println(message_index);
     set_next_message();
-
-
+    orientation = VERTICAL;
+    swap_orientation();
 }
 
 void TextScroller::initialise_pot_0(int pot_value) {
     set_speed(map_to_speed(pot_value));
 }
 
+void TextScroller::initialise_pot_1(int pot_value) {
+    set_text_hue(map_to_byte(pot_value));
+}
+
+void TextScroller::initialise_pot_2(int pot_value) {
+    set_bg_hue(map_to_byte(pot_value));
+}
+
+void TextScroller::initialise_pot_3(int pot_value) {
+    set_bg_val(map_to_byte(pot_value));
+}
+
 void TextScroller::set_next_message() {
     // Get the next message index
     message_index = (message_index + 1) % constants::NUM_MESSAGES;
-    Serial.println(message_index);
 
     // Read from progmem into buffer
-    Serial.println("before 0");
     strcpy_P(message, (char*)pgm_read_word(&(constants::MESSAGES[message_index])));
-    Serial.println("after 0");
-
-    Serial.println(message[0]);
-    Serial.println(message[1]);
-    Serial.println(message[2]);
 
     // Count number of characters in message
-    Serial.println("before 1");
     num_message_chars = strlen(message);
-    Serial.println("after 1");
-    Serial.println(num_message_chars);
 
     // Count number of columns in message
     num_message_columns = num_message_chars * constants::CHAR_WIDTH;
-    Serial.println(num_message_columns);
+
+    // Reset message progress
+    message_progress = 0;
 }
 
 void TextScroller::update() {
@@ -94,52 +87,51 @@ void TextScroller::apply_to_leds() {
 
         // The column in the character being displayed
         int character_column = message_column_index % constants::CHAR_WIDTH;
-        // Serial.print("char_col:");
-        // Serial.print(character_column);
-        // Serial.print(" ");
+
         int character_ascii_code = int(message[message_char_index]);
-        // Serial.print("msg_char_index:");
-        // Serial.print(message_char_index);
-        // Serial.print(" ");
-        // Serial.print("msg_letter:");
-        // Serial.print(message[message_char_index]);
-        // Serial.print(" ");
+
         int character_table_index = map_ascii_to_character_table(character_ascii_code);
-        // Serial.print("char_table_index:");
-        // Serial.print(character_table_index);
-        // Serial.print(" ");
 
         for (int display_row_index = 0; display_row_index < constants::CHAR_HEIGHT; display_row_index++) {
-            int letter_byte_index = (character_table_index * 8) + display_row_index;
-            byte char_row_byte = pgm_read_byte_near(constants::ASCII_CHARS + letter_byte_index);
-            int led_grid_index = display_pos_to_led_grid_index(display_row_index, display_column_index);
-            int led_index = pgm_read_word_near(constants::LED_GRID_INDECIES + led_grid_index);
-            if (led_index >= 0) {
-                if (char_row_byte >> character_column & 1 == 1) {
-                    leds[led_index] = CRGB::Red;
-                } else {
-                    leds[led_index] = CRGB::Black;
-                } 
-            }
+            // Index of the byte in the character map table we want to read for the row of the character we're displaying
+            int letter_byte_index = (character_table_index * constants::CHAR_WIDTH) + display_row_index;
 
-            if (display_row_index == 0) {
-                // Serial.print("letter_byte_index:");
-                // Serial.print(letter_byte_index);
-                // Serial.print(" ");
-                // Serial.print("char_row_byte:");
-                // Serial.print(char_row_byte);
-                // Serial.print(" ");
-                // Serial.println(led_grid_index);
+            // Get the byte for the row we want to draw
+            byte char_row_byte = pgm_read_byte_near(constants::ASCII_CHARS + letter_byte_index);
+
+            // Covert from coords on the diplay grid to an index on the main led grid
+            int led_grid_index = display_pos_to_led_grid_index(display_row_index, display_column_index);
+
+            // The the index of the LED we'll be drawing to
+            int led_index = pgm_read_word_near(constants::LED_GRID_INDECIES + led_grid_index);
+
+            // If the LED on the grid is in a position that has a physical LED
+            if (led_index >= 0) {
+                // Check whether the pixel we want to draw is on or off
+                if (char_row_byte >> character_column & 1 == 1) {
+                    leds[led_index] = CHSV(text_hue, 255, 255);;
+                } else {
+                    leds[led_index] = CHSV(bg_hue, 255, bg_val);;
+                } 
             }
         }
     }
-    // Serial.println("---");
 }
 
 int TextScroller::display_pos_to_led_grid_index(int display_row_index, int display_column_index) {
-    int grid_row_index = top_left_pixel_row + display_row_index;
-    int grid_column_index = top_left_pixel_column + display_column_index;
-    return (grid_row_index * constants::GRID_WIDTH) + grid_column_index;
+    int grid_row_index = 0;
+    int grid_column_index = 0;
+
+    if (orientation == HORIZONTAL) {
+        grid_row_index = top_left_pixel_row + display_row_index;
+        grid_column_index = top_left_pixel_column + display_column_index;
+    } else {
+        grid_row_index = top_left_pixel_row + display_column_index;
+        grid_column_index = top_left_pixel_column - display_row_index;
+    }
+
+    int led_grid_index = (grid_row_index * constants::GRID_WIDTH) + grid_column_index;
+    return led_grid_index;
 }
 
 int TextScroller::map_ascii_to_character_table(int ascii_value) {
@@ -150,10 +142,64 @@ void TextScroller::set_speed(float speed_) {
     speed = speed_;
 }
 
+void TextScroller::set_text_hue(byte hue) {
+    text_hue = hue;
+}
+
+void TextScroller::set_bg_hue(byte hue) {
+    bg_hue = hue;
+}
+
+void TextScroller::set_bg_val(byte val) {
+    bg_val = val;
+}
+
 void TextScroller::process_new_pot_0_value(int pot_value) {
     set_speed(map_to_speed(pot_value));
 }
 
+void TextScroller::process_new_pot_1_value(int pot_value) {
+    set_text_hue(map_to_byte(pot_value));
+}
+
+void TextScroller::process_new_pot_2_value(int pot_value) {
+    set_bg_hue(map_to_byte(pot_value));
+}
+
+void TextScroller::process_new_pot_3_value(int pot_value) {
+    set_bg_val(map_to_byte(pot_value));
+}
+
 float TextScroller::map_to_speed(int pot_value) {
     return (float(pot_value) / float(1023)) * 0.04;
+}
+
+byte TextScroller::map_to_byte(int pot_value) {
+    return int((float(pot_value) / float(1023)) * 255);
+}
+
+void TextScroller::button_0_pressed() {
+    set_next_message();
+}
+
+void TextScroller::button_1_pressed() {
+    swap_orientation();
+}
+
+void TextScroller::swap_orientation() {
+    if (orientation == HORIZONTAL) {
+        orientation = VERTICAL;
+        top_left_pixel_row = constants::VERT_TOP_LEFT_ROW;
+        top_left_pixel_column = constants::VERT_TOP_LEFT_COLUMN;
+        display_pixel_width = constants::VERT_DISPLAY_WIDTH;
+    } else {
+        orientation = HORIZONTAL;
+        top_left_pixel_row = constants::HORIZ_TOP_LEFT_ROW;
+        top_left_pixel_column = constants::HORIZ_TOP_LEFT_COLUMN;
+        display_pixel_width = constants::HORIZ_DISPLAY_WIDTH;
+    }
+
+    for (int index = 0; index < constants::NUM_LEDS; index++) {
+            leds[index] = CRGB::Black;
+    }
 }

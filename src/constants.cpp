@@ -8,17 +8,26 @@ namespace constants {
     extern const byte POT_2_PIN = A1;
     extern const byte POT_3_PIN = A0;
     extern const byte BUTTON_0_PIN = 4;
+    extern const byte BUTTON_1_PIN = 5;
+    extern const byte BUTTON_2_PIN = 6;
 
     extern const byte MODE_CHANGE_PIN = 3;
 
     #ifdef OUTPUT_SUIT
 
-        extern const byte GRID_WIDTH = 10;
-        extern const byte GRID_HEIGHT = 45;
-
         ////////////////////////////////////
         // SUIT (366 LEDS)                //
         ////////////////////////////////////
+
+        extern const byte GRID_WIDTH = 10;
+        extern const byte GRID_HEIGHT = 45;
+
+        extern const byte HORIZ_TOP_LEFT_ROW = 0;
+        extern const byte HORIZ_TOP_LEFT_COLUMN = 0;
+        extern const byte HORIZ_DISPLAY_WIDTH = 10;
+        extern const byte VERT_TOP_LEFT_ROW = 0;
+        extern const byte VERT_TOP_LEFT_COLUMN = 8;
+        extern const byte VERT_DISPLAY_WIDTH = 44;
 
         extern const int LED_GRID_INDECIES[GRID_WIDTH*GRID_HEIGHT] PROGMEM = {
             0,   26,  27,  59,  60,  305, 306, 338, 339, 365,
@@ -330,6 +339,13 @@ namespace constants {
         extern const byte GRID_WIDTH = 8;
         extern const byte GRID_HEIGHT = 8;
 
+        extern const byte HORIZ_TOP_LEFT_ROW = 0;
+        extern const byte HORIZ_TOP_LEFT_COLUMN = 0;
+        extern const byte HORIZ_DISPLAY_WIDTH = 8;
+        extern const byte VERT_TOP_LEFT_ROW = 0;
+        extern const byte VERT_TOP_LEFT_COLUMN = 7;
+        extern const byte VERT_DISPLAY_WIDTH = 12;
+
         extern const int LED_GRID_INDECIES[NUM_LEDS] PROGMEM = {
             0,   1,   2,   3,   4,   5,   6,   7,
             8,   9,   10,  11,  12,  13,  14,  15,
@@ -374,6 +390,13 @@ namespace constants {
 
         extern const byte GRID_WIDTH = 16;
         extern const byte GRID_HEIGHT = 16;
+
+        extern const byte HORIZ_TOP_LEFT_ROW = 1;
+        extern const byte HORIZ_TOP_LEFT_COLUMN = 1;
+        extern const byte HORIZ_DISPLAY_WIDTH = 8;
+        extern const byte VERT_TOP_LEFT_ROW = 1;
+        extern const byte VERT_TOP_LEFT_COLUMN = 8;
+        extern const byte VERT_DISPLAY_WIDTH = 12;
 
         extern const int LED_GRID_INDECIES[NUM_LEDS] PROGMEM = {
             15,  14,  13,  12,     11,  10,  9,   8,      7,   6,   5,   4,      3,   2,   1,   0,
@@ -443,18 +466,52 @@ namespace constants {
 
     #endif
 
-
     extern const int CHAR_WIDTH = 8;
     extern const int CHAR_HEIGHT = 8;
-    extern const int NUM_MESSAGES = 2;
-    extern const char MESSAGE_0[] PROGMEM = "Hallo my Esther :) ";
-    extern const char MESSAGE_1[] PROGMEM = "world";
+    extern const int NUM_MESSAGES = 3;
+    extern const char MESSAGE_0[] PROGMEM = "Happy Halloween! ";
+    extern const char MESSAGE_1[] PROGMEM = "Spooktacular! ";
+    extern const char MESSAGE_2[] PROGMEM = "^._.^ ";
     extern const char* const MESSAGES[] PROGMEM = {
         MESSAGE_0,
-        MESSAGE_1
+        MESSAGE_1,
+        MESSAGE_2,
     };
 
     // https://github.com/dhepper/font8x8
+    // Every character in the font is encoded row-wise in 8 bytes.
+
+    // The least significant bit of each byte corresponds to the first pixel in a
+    //  row. 
+
+    // The character 'A' (0x41 / 65) is encoded as 
+    // { 0x0C, 0x1E, 0x33, 0x33, 0x3F, 0x33, 0x33, 0x00}
+
+
+    //     0x0C => 0000 1100 => ..XX....
+    //     0X1E => 0001 1110 => .XXXX...
+    //     0x33 => 0011 0011 => XX..XX..
+    //     0x33 => 0011 0011 => XX..XX..
+    //     0x3F => 0011 1111 => xxxxxx..
+    //     0x33 => 0011 0011 => XX..XX..
+    //     0x33 => 0011 0011 => XX..XX..
+    //     0x00 => 0000 0000 => ........
+
+    // To access the nth pixel in a row, right-shift by n.
+
+    //                          . . X X . . . .
+    //                          | | | | | | | |
+    //     (0x0C >> 0) & 1 == 0-+ | | | | | | |
+    //     (0x0C >> 1) & 1 == 0---+ | | | | | |
+    //     (0x0C >> 2) & 1 == 1-----+ | | | | |
+    //     (0x0C >> 3) & 1 == 1-------+ | | | |
+    //     (0x0C >> 4) & 1 == 0---------+ | | |
+    //     (0x0C >> 5) & 1 == 0-----------+ | |
+    //     (0x0C >> 6) & 1 == 0-------------+ |
+    //     (0x0C >> 7) & 1 == 0---------------+
+
+
+
     extern const byte ASCII_CHARS[] PROGMEM = {
         0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,   // U+0020 (space)
         0x18, 0x3C, 0x3C, 0x18, 0x18, 0x00, 0x18, 0x00,   // U+0021 (!)
