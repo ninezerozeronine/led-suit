@@ -7,7 +7,7 @@
 #include "constants.h"
 #include "potentiometer.h"
 #include "button.h"
-#include "loop_timer.h"
+// #include "loop_timer.h"
 
 #include "modes/light_on_press.h"
 #include "modes/linear_fill.h"
@@ -15,6 +15,7 @@
 #include "modes/hard_rainbow_loop.h"
 #include "modes/perlin.h"
 #include "modes/streakers.h"
+#include "modes/text_scroller.h"
 
 #ifdef __arm__
 // should use uinstd.h to define sbrk but Due causes a conflict
@@ -42,20 +43,26 @@ Potentiometer pot_1(constants::POT_1_PIN);
 Potentiometer pot_2(constants::POT_2_PIN);
 Potentiometer pot_3(constants::POT_3_PIN);
 Button button_0(constants::BUTTON_0_PIN);
+Button button_1(constants::BUTTON_1_PIN);
+Button button_2(constants::BUTTON_2_PIN);
 
 Button mode_change_button(constants::MODE_CHANGE_PIN);
 
 Mode * current_mode_ptr;
 
-unsigned long last_loop_print = 0;
-unsigned long loop_print_interval = 200;
-LoopTimer loop_timer;
+// unsigned long last_loop_print = 0;
+// unsigned long loop_print_interval = 200;
+// LoopTimer loop_timer;
 
-byte num_modes = 6;
-byte current_mode = num_modes - 1;
+int num_modes = 7;
+int current_mode = num_modes - 1;
 
 void setup() {
     Serial.begin(9600);
+    // wait for serial port to connect. Needed for native USB port only
+    while (!Serial) {
+    ; 
+    }
     FastLED.addLeds<NEOPIXEL, constants::LED_DATA_PIN>(leds, constants::NUM_LEDS);
 
     unsigned long current_millis = millis();
@@ -66,6 +73,8 @@ void setup() {
     pot_2.init();
     pot_3.init();
     button_0.init();
+    button_1.init();
+    button_2.init();
     mode_change_button.init();
 
     delay(50);
@@ -82,12 +91,12 @@ void setup() {
 void loop() {
     // Serial.println(freeMemory());
 
-    loop_timer.update();
-    unsigned long current_millis = millis();
-    if ((current_millis - last_loop_print) > loop_print_interval) {
-        Serial.println(loop_timer.get_loop_time());
-        last_loop_print = current_millis;
-    }
+    // loop_timer.update();
+    // unsigned long current_millis = millis();
+    // if ((current_millis - last_loop_print) > loop_print_interval) {
+    //     Serial.println(loop_timer.get_loop_time());
+    //     last_loop_print = current_millis;
+    // }
     
     brightness_pot.update();
     pot_0.update(&pot_0_updated);
@@ -95,6 +104,8 @@ void loop() {
     pot_2.update(&pot_2_updated);
     pot_3.update(&pot_3_updated);
     button_0.update(&button_0_pressed, &button_0_released);
+    button_1.update(&button_1_pressed, &button_1_released);
+    button_2.update(&button_2_pressed, &button_2_released);
 
     current_mode_ptr->update();
     current_mode_ptr->apply_to_leds();
@@ -120,6 +131,7 @@ void delete_current_mode(){
 
 void setup_next_mode(){
     current_mode = (current_mode + 1) % num_modes;
+    Serial.println(current_mode);
     switch (current_mode){
         case 0:
             current_mode_ptr = new LightOnPress(leds);
@@ -139,6 +151,9 @@ void setup_next_mode(){
         case 5:
             current_mode_ptr = new Streakers(leds);
             break;
+        case 6:
+            current_mode_ptr = new TextScroller(leds);
+            break;
     }
 }
 
@@ -149,6 +164,8 @@ void initialise_current_mode() {
     current_mode_ptr->initialise_pot_2(pot_2.get_value());
     current_mode_ptr->initialise_pot_3(pot_3.get_value());
     current_mode_ptr->initialise_button_0(button_0.get_state());
+    current_mode_ptr->initialise_button_1(button_1.get_state());
+    current_mode_ptr->initialise_button_2(button_2.get_state());
 }
 
 void pot_0_updated(int new_val){
@@ -173,4 +190,20 @@ void button_0_pressed(){
 
 void button_0_released(){
     current_mode_ptr->button_0_released();
+}
+
+void button_1_pressed(){
+    current_mode_ptr->button_1_pressed();
+}
+
+void button_1_released(){
+    current_mode_ptr->button_1_released();
+}
+
+void button_2_pressed(){
+    current_mode_ptr->button_2_pressed();
+}
+
+void button_2_released(){
+    current_mode_ptr->button_2_released();
 }

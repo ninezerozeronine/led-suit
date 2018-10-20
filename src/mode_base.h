@@ -34,16 +34,20 @@ class Mode {
         virtual void initialise_pot_1(int value) {}
         virtual void initialise_pot_2(int value) {}
         virtual void initialise_pot_3(int value) {}
-        virtual void initialise_pot_4(int value) {}
         virtual void initialise_button_0(byte state) {}
+        virtual void initialise_button_1(byte state) {}
+        virtual void initialise_button_2(byte state) {}
 
         virtual void process_new_pot_0_value(int value) {}
         virtual void process_new_pot_1_value(int value) {}
         virtual void process_new_pot_2_value(int value) {}
         virtual void process_new_pot_3_value(int value) {}
-        virtual void process_new_pot_4_value(int value) {}
         virtual void button_0_pressed() {}
         virtual void button_0_released() {}
+        virtual void button_1_pressed() {}
+        virtual void button_1_released() {}
+        virtual void button_2_pressed() {}
+        virtual void button_2_released() {}
     protected:
         void constructor_defaults();
         CRGB * leds;
