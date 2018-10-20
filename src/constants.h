@@ -3,9 +3,9 @@
 
 #include <Arduino.h>
 
-#define OUTPUT_SUIT
+// #define OUTPUT_SUIT
 // #define OUTPUT_64_GRID
-// #define OUTPUT_256_GRID
+#define OUTPUT_256_GRID
 
 namespace constants {
     // We need to define this here as extern consts are not compile time
