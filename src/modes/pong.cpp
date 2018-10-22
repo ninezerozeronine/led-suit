@@ -10,18 +10,16 @@ Pong::Pong(CRGB* leds_) : Mode(leds_) {
 
 void Pong::initialise() {
     last_update = millis();
+    last_fade = millis();
     switch_to_wait_to_start();
 }
 
 void Pong::initialise_pot_0(int value) {
-    set_zone_size(map_pot_0_value(value));
+    set_bottom_zone_size(map_pot_to_unit(value));
 }
 
 void Pong::initialise_pot_1(int value) {
-    set_bottom_hue(map_pot_to_byte(value));
-}
-void Pong::initialise_pot_2(int value) {
-    set_top_hue(map_pot_to_byte(value));
+    set_top_zone_size(map_pot_to_unit(value));
 }
 
 void Pong::initialise_button_1(byte state) {
@@ -41,32 +39,38 @@ void Pong::initialise_button_2(byte state) {
 
 void Pong::process_new_pot_0_value(int value) {
     if (game_mode == WAIT_TO_START) {
-        set_zone_size(map_pot_0_value(value));
+        set_bottom_zone_size(map_pot_to_unit(value));
     }
 }
 
 void Pong::process_new_pot_1_value(int value) {
     if (game_mode == WAIT_TO_START) {
-        set_bottom_hue(map_pot_to_byte(value));
-    }
-}
-
-void Pong::process_new_pot_2_value(int value) {
-    if (game_mode == WAIT_TO_START) {
-        set_top_hue(map_pot_to_byte(value));
+        set_top_zone_size(map_pot_to_unit(value));
     }
 }
 
 void Pong::button_0_pressed() {
-    Serial.println("button_1_pressed");
     top_was_pressed = true;
     top_is_pressed = true;
+    int rounded_pos = round(ball_position);
+    Serial.print(top_zone_min);
+    Serial.print(", ");
+    Serial.println(top_zone_max);
+    Serial.println(ball_position);
+    Serial.println(rounded_pos);
+    Serial.println("---");
 }
 
 void Pong::button_1_pressed() {
-    Serial.println("button_2_pressed");
     bottom_was_pressed = true;
     bottom_is_pressed = true;
+    int rounded_pos = round(ball_position);
+    Serial.print(bottom_zone_min);
+    Serial.print(", ");
+    Serial.println(bottom_zone_max);
+    Serial.println(ball_position);
+    Serial.println(rounded_pos);
+    Serial.println("---");
 }
 
 void Pong::button_0_released() {
@@ -130,6 +134,8 @@ void Pong::apply_to_leds() {
 void Pong::constructor_defaults(){
     last_update = 0;
     elapsed_millis = 0;
+    current_millis = 0;
+    last_fade = 0;
     ball_speed = 0;
     ball_position = float(constants::GRID_HEIGHT)/2.0;
     ball_blink_state = true;
@@ -139,10 +145,6 @@ void Pong::constructor_defaults(){
     bottom_zone_max = 0;
     countdown_begin = 0;
     win_begin = 0;
-    top_hue = 0;
-    top_hue_inverse = 128;
-    bottom_hue = 100;
-    bottom_hue_inverse = 228;
     both_pressed_begin = 0;
 
     game_mode = WAIT_TO_START;
@@ -153,40 +155,22 @@ void Pong::constructor_defaults(){
     bottom_is_pressed = false;
 }
 
-float Pong::map_pot_0_value(int value) {
-    float percentage = float(value)/1023.0;
-    return (ZONE_PERCENT_MIN * (1.0 - percentage)) + (ZONE_PERCENT_MAX * percentage);
+float Pong::map_pot_to_unit(int value) {
+    return float(value)/1023.0;
 }
 
-byte Pong::map_pot_to_byte(int pot_value) {
-    return map(pot_value, 0, 1023, 0, 255);
+void Pong::set_top_zone_size(float percentage) {
+    float conformed_percentage = (ZONE_PERCENT_MIN * (1.0 - percentage)) + (ZONE_PERCENT_MAX * percentage);
+    float zone_width = (float(constants::GRID_HEIGHT) * 0.5) * conformed_percentage;
+    top_zone_min = 0;
+    top_zone_max = round(zone_width);
 }
 
-void Pong::set_zone_size(float percentage) {
-    Serial.println(percentage);
-    top_zone_min = 0.0;
-    top_zone_max = (float(constants::GRID_HEIGHT) * 0.5) * percentage;
-
-    bottom_zone_min = float(constants::GRID_HEIGHT) - top_zone_max;
-    bottom_zone_max = float(constants::GRID_HEIGHT);
-
-    Serial.print(top_zone_min);
-    Serial.print(", ");
-    Serial.print(top_zone_max);
-    Serial.print(" ");
-    Serial.print(bottom_zone_min);
-    Serial.print(", ");
-    Serial.println(bottom_zone_max);
-}
-
-void Pong::set_top_hue(byte hue) {
-    top_hue = hue;
-    top_hue_inverse = (top_hue + 128) % 256;
-}
-
-void Pong::set_bottom_hue(byte hue) {
-    bottom_hue = hue;
-    bottom_hue_inverse = (bottom_hue + 128) % 256;
+void Pong::set_bottom_zone_size(float percentage) {
+    float conformed_percentage = (ZONE_PERCENT_MIN * (1.0 - percentage)) + (ZONE_PERCENT_MAX * percentage);
+    float zone_width = (float(constants::GRID_HEIGHT) * 0.5) * conformed_percentage;
+    bottom_zone_min = constants::GRID_HEIGHT - 1 - round(zone_width);
+    bottom_zone_max = constants::GRID_HEIGHT - 1; 
 }
 
 void Pong::update_wait_to_start() {
@@ -220,17 +204,18 @@ void Pong::update_countdown() {
 }
 
 void Pong::update_playing() {
-    if (ball_position < 0) {
+    int rounded_pos = round(ball_position);
+    if (rounded_pos < 0) {
         switch_to_bottom_won();
     }
 
-    if (ball_position > float(constants::GRID_HEIGHT)) {
+    if (rounded_pos > constants::GRID_HEIGHT - 1) {
         switch_to_top_won();
     }
 
     // Check if top has returned
     if (ball_speed < 0) {
-        if (ball_position < top_zone_max) {
+        if (rounded_pos <= top_zone_max) {
             if (top_was_pressed) {
                 return_ball();
             }
@@ -239,7 +224,7 @@ void Pong::update_playing() {
 
     // Check if bottom has returned
     if (ball_speed > 0) {
-        if (ball_position > bottom_zone_min) {
+        if (rounded_pos >= bottom_zone_min) {
             if (bottom_was_pressed) {
                 return_ball();
             }
@@ -263,7 +248,8 @@ void Pong::update_bottom_won() {
 }
 
 void Pong::return_ball() {
-    ball_speed *= -1.2;
+    Serial.println("returned");
+    ball_speed *= -1.0 * RETURN_SPEED_MULTIPLIER;
 }
 
 void Pong::draw_wait_to_start() {
@@ -282,7 +268,8 @@ void Pong::draw_countdown() {
 }
 
 void Pong::draw_playing() {
-    if (elapsed_millis > FADE_INTERVAL) {
+    if ((current_millis - last_fade) > FADE_INTERVAL) {
+        last_fade = current_millis;
         for(int index = 0; index < constants::NUM_LEDS; index++) {
             leds[index].fadeToBlackBy(FADE_AMOUNT);
         }
@@ -293,83 +280,89 @@ void Pong::draw_playing() {
 
 void Pong::draw_top_won() {
     for(int index = 0; index < constants::NUM_LEDS; index++) {
-        leds[index] = (CHSV(top_hue, 255, 255));
+        leds[index] = CRGB::Red;
     }
 }
-
 
 void Pong::draw_bottom_won() {
     for(int index = 0; index < constants::NUM_LEDS; index++) {
-        leds[index] = (CHSV(bottom_hue, 255, 255));
+        leds[index] = CRGB::Green;
     }
 }
 
-
 void Pong::draw_endzones() {
     // Draw top
-    for (int row = int(top_zone_min); row < int(top_zone_max); row++) {
+    for (int row = int(top_zone_min); row <= int(top_zone_max); row++) {
         for (int column = 0; column < constants::GRID_WIDTH; column++) {
             int index = (row * constants::GRID_WIDTH) + column;
             if (top_is_pressed) {
-                leds[index] = CHSV(top_hue_inverse, 255, 255);
+                leds[index] = CRGB::White;
             } else {
-                leds[index] = CHSV(top_hue, 255, 255);
+                leds[index] = CRGB::Red;
             }
         }
     }
 
     // Draw bottom
-    for (int row = int(bottom_zone_min); row < int(bottom_zone_max); row++) {
+    for (int row = int(bottom_zone_min); row <= int(bottom_zone_max); row++) {
         for (int column = 0; column < constants::GRID_WIDTH; column++) {
             int index = (row * constants::GRID_WIDTH) + column;
             if (bottom_is_pressed) {
-                leds[index] = CHSV(bottom_hue_inverse, 255, 255);
+                leds[index] = CRGB::White;
             } else {
-                leds[index] = CHSV(bottom_hue, 255, 255);
+                leds[index] = CRGB::Green;
             }
         }
     }
 }
 
 void Pong::draw_ball() {
-    int row = int(ball_position);
+    int row = round(ball_position);
+    if (row >= constants::GRID_HEIGHT) {
+        row = constants::GRID_HEIGHT - 1;
+    }
+    if (row < 0) {
+        row = 0;
+    }
     for (int column = 0; column < constants::GRID_WIDTH; column++) {
         int index = (row * constants::GRID_WIDTH) + column;
-        leds[index] = CRGB::White;
+        leds[index] = CRGB::Blue;
     }
 }
 
 
 void Pong::switch_to_wait_to_start() {
-    Serial.println(" -> WAIT_TO_START");
+    // Serial.println(" -> WAIT_TO_START");
     game_mode = WAIT_TO_START;
     ball_position = constants::GRID_HEIGHT / 2.0;
 }
 
 void Pong::switch_to_countdown() {
-    Serial.println(" -> COUNTDOWN");
+    // Serial.println(" -> COUNTDOWN");
     game_mode = COUNTDOWN;
     countdown_begin = current_millis;
 }
 
 void Pong::switch_to_playing() {
-    Serial.println(" -> PLAYING");
+    // Serial.println(" -> PLAYING");
     game_mode = PLAYING;
     float mult = 1.0;
-    if (random(1)) {
+    int random_val = random(0, 2);
+    Serial.println(random_val);
+    if (random_val) {
         float mult = -1.0;
     }
-    ball_speed = 0.0025 * mult;
+    ball_speed = INITIAL_BALL_SPEED * mult;
 }
 
 void Pong::switch_to_top_won() {
-    Serial.println(" -> TOP_WON");
+    // Serial.println(" -> TOP_WON");
     game_mode = TOP_WON;
     win_begin = current_millis;
 }
 
 void Pong::switch_to_bottom_won() {
-    Serial.println(" -> BOTTOM_WON");
+    // Serial.println(" -> BOTTOM_WON");
     game_mode = BOTTOM_WON;
     win_begin = current_millis;
 }

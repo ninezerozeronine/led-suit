@@ -1,5 +1,5 @@
 #define NUM_STREAKERS 10
-
+// #define LOOP_TIMING
 
 #include <FastLED.h>
 #include <Arduino.h>
@@ -7,7 +7,10 @@
 #include "constants.h"
 #include "potentiometer.h"
 #include "button.h"
-// #include "loop_timer.h"
+
+#ifdef LOOP_TIMING
+    #include "loop_timer.h"
+#endif
 
 #include "modes/light_on_press.h"
 #include "modes/linear_fill.h"
@@ -51,9 +54,12 @@ Button mode_change_button(constants::MODE_CHANGE_PIN);
 
 Mode * current_mode_ptr;
 
-// unsigned long last_loop_print = 0;
-// unsigned long loop_print_interval = 200;
-// LoopTimer loop_timer;
+#ifdef LOOP_TIMING
+    unsigned long last_loop_print = 0;
+    unsigned long loop_print_interval = 200;
+    LoopTimer loop_timer;
+#endif
+
 
 int num_modes = 8;
 int current_mode = num_modes - 1;
@@ -92,13 +98,15 @@ void setup() {
 void loop() {
     // Serial.println(freeMemory());
 
-    // loop_timer.update();
-    // unsigned long current_millis = millis();
-    // if ((current_millis - last_loop_print) > loop_print_interval) {
-    //     Serial.println(loop_timer.get_loop_time());
-    //     last_loop_print = current_millis;
-    // }
-    
+    #ifdef LOOP_TIMING
+        loop_timer.update();
+        unsigned long current_millis = millis();
+        if ((current_millis - last_loop_print) > loop_print_interval) {
+            Serial.println(loop_timer.get_loop_time());
+            last_loop_print = current_millis;
+        }
+    #endif
+
     brightness_pot.update();
     pot_0.update(&pot_0_updated);
     pot_1.update(&pot_1_updated);
