@@ -24,10 +24,10 @@ class Pong: public Mode {
         void process_new_pot_0_value(int value);
         void process_new_pot_1_value(int value);
         void process_new_pot_2_value(int value);
+        void button_0_pressed();
         void button_1_pressed();
-        void button_2_pressed();
+        void button_0_released();
         void button_1_released();
-        void button_2_released();
         void update();
 
         void apply_to_leds();
@@ -42,7 +42,7 @@ class Pong: public Mode {
         };
 
         void constructor_defaults();
-        int map_pot_0_value(int value);
+        float map_pot_0_value(int value);
         byte map_pot_to_byte(int pot_value);
 
         void set_zone_size(float percentage);
@@ -61,8 +61,6 @@ class Pong: public Mode {
         void draw_playing();
         void draw_top_won();
         void draw_bottom_won();
-        void set_all_black();
-        void fade_all();
         void draw_endzones();
         void draw_ball();
 
@@ -71,8 +69,6 @@ class Pong: public Mode {
         void switch_to_playing();
         void switch_to_top_won();
         void switch_to_bottom_won();
-
-
 
 
         unsigned long last_update;
@@ -88,7 +84,9 @@ class Pong: public Mode {
         unsigned long countdown_begin;
         unsigned long win_begin;
         int top_hue;
+        int top_hue_inverse;
         int bottom_hue;
+        int bottom_hue_inverse;
         unsigned long both_pressed_begin;
         bool both_pressed;
 

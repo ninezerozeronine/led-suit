@@ -18,10 +18,10 @@ void Pong::initialise_pot_0(int value) {
 }
 
 void Pong::initialise_pot_1(int value) {
-    top_hue = map_pot_to_byte(value);
+    set_bottom_hue(map_pot_to_byte(value));
 }
 void Pong::initialise_pot_2(int value) {
-    bottom_hue = map_pot_to_byte(value);
+    set_top_hue(map_pot_to_byte(value));
 }
 
 void Pong::initialise_button_1(byte state) {
@@ -47,31 +47,33 @@ void Pong::process_new_pot_0_value(int value) {
 
 void Pong::process_new_pot_1_value(int value) {
     if (game_mode == WAIT_TO_START) {
-        set_top_hue(map_pot_to_byte(value));
+        set_bottom_hue(map_pot_to_byte(value));
     }
 }
 
 void Pong::process_new_pot_2_value(int value) {
     if (game_mode == WAIT_TO_START) {
-        set_bottom_hue(map_pot_to_byte(value));
+        set_top_hue(map_pot_to_byte(value));
     }
 }
 
-void Pong::button_1_pressed() {
+void Pong::button_0_pressed() {
+    Serial.println("button_1_pressed");
     top_was_pressed = true;
     top_is_pressed = true;
 }
 
-void Pong::button_2_pressed() {
+void Pong::button_1_pressed() {
+    Serial.println("button_2_pressed");
     bottom_was_pressed = true;
     bottom_is_pressed = true;
 }
 
-void Pong::button_1_released() {
+void Pong::button_0_released() {
     top_is_pressed = false;
 }
 
-void Pong::button_2_released() {
+void Pong::button_1_released() {
     bottom_is_pressed = false;
 }
 
@@ -138,7 +140,9 @@ void Pong::constructor_defaults(){
     countdown_begin = 0;
     win_begin = 0;
     top_hue = 0;
-    bottom_hue = 180;
+    top_hue_inverse = 128;
+    bottom_hue = 100;
+    bottom_hue_inverse = 228;
     both_pressed_begin = 0;
 
     game_mode = WAIT_TO_START;
@@ -149,9 +153,9 @@ void Pong::constructor_defaults(){
     bottom_is_pressed = false;
 }
 
-int Pong::map_pot_0_value(int value) {
+float Pong::map_pot_0_value(int value) {
     float percentage = float(value)/1023.0;
-    return (ZONE_PERCENT_MIN + (1.0 - percentage)) + (ZONE_PERCENT_MAX * percentage);
+    return (ZONE_PERCENT_MIN * (1.0 - percentage)) + (ZONE_PERCENT_MAX * percentage);
 }
 
 byte Pong::map_pot_to_byte(int pot_value) {
@@ -159,19 +163,30 @@ byte Pong::map_pot_to_byte(int pot_value) {
 }
 
 void Pong::set_zone_size(float percentage) {
+    Serial.println(percentage);
     top_zone_min = 0.0;
-    top_zone_max = (constants::GRID_HEIGHT * 0.5) * percentage;
+    top_zone_max = (float(constants::GRID_HEIGHT) * 0.5) * percentage;
 
-    bottom_zone_min = constants::GRID_HEIGHT - top_zone_max;
-    bottom_zone_max = constants::GRID_HEIGHT;
+    bottom_zone_min = float(constants::GRID_HEIGHT) - top_zone_max;
+    bottom_zone_max = float(constants::GRID_HEIGHT);
+
+    Serial.print(top_zone_min);
+    Serial.print(", ");
+    Serial.print(top_zone_max);
+    Serial.print(" ");
+    Serial.print(bottom_zone_min);
+    Serial.print(", ");
+    Serial.println(bottom_zone_max);
 }
 
 void Pong::set_top_hue(byte hue) {
     top_hue = hue;
+    top_hue_inverse = (top_hue + 128) % 256;
 }
 
 void Pong::set_bottom_hue(byte hue) {
     bottom_hue = hue;
+    bottom_hue_inverse = (bottom_hue + 128) % 256;
 }
 
 void Pong::update_wait_to_start() {
@@ -247,13 +262,18 @@ void Pong::update_bottom_won() {
     }
 }
 
+void Pong::return_ball() {
+    ball_speed *= -1.2;
+}
+
 void Pong::draw_wait_to_start() {
-    FastLED.showColor(CRGB::Black);
+    for(int index = 0; index < constants::NUM_LEDS; index++) {
+        leds[index] = CRGB::Black;
+    }
     draw_endzones();
     if (ball_blink_state) {
         draw_ball();
     }
-
 }
 
 void Pong::draw_countdown() {
@@ -266,30 +286,90 @@ void Pong::draw_playing() {
         for(int index = 0; index < constants::NUM_LEDS; index++) {
             leds[index].fadeToBlackBy(FADE_AMOUNT);
         }
+    }
     draw_endzones();
     draw_ball();
 }
 
 void Pong::draw_top_won() {
-
+    for(int index = 0; index < constants::NUM_LEDS; index++) {
+        leds[index] = (CHSV(top_hue, 255, 255));
+    }
 }
 
-void Pong::set_all_black() {
-
-}
 
 void Pong::draw_bottom_won() {
-
+    for(int index = 0; index < constants::NUM_LEDS; index++) {
+        leds[index] = (CHSV(bottom_hue, 255, 255));
+    }
 }
 
-void Pong::fade_all() {
-
-}
 
 void Pong::draw_endzones() {
+    // Draw top
+    for (int row = int(top_zone_min); row < int(top_zone_max); row++) {
+        for (int column = 0; column < constants::GRID_WIDTH; column++) {
+            int index = (row * constants::GRID_WIDTH) + column;
+            if (top_is_pressed) {
+                leds[index] = CHSV(top_hue_inverse, 255, 255);
+            } else {
+                leds[index] = CHSV(top_hue, 255, 255);
+            }
+        }
+    }
 
+    // Draw bottom
+    for (int row = int(bottom_zone_min); row < int(bottom_zone_max); row++) {
+        for (int column = 0; column < constants::GRID_WIDTH; column++) {
+            int index = (row * constants::GRID_WIDTH) + column;
+            if (bottom_is_pressed) {
+                leds[index] = CHSV(bottom_hue_inverse, 255, 255);
+            } else {
+                leds[index] = CHSV(bottom_hue, 255, 255);
+            }
+        }
+    }
 }
 
 void Pong::draw_ball() {
+    int row = int(ball_position);
+    for (int column = 0; column < constants::GRID_WIDTH; column++) {
+        int index = (row * constants::GRID_WIDTH) + column;
+        leds[index] = CRGB::White;
+    }
+}
 
+
+void Pong::switch_to_wait_to_start() {
+    Serial.println(" -> WAIT_TO_START");
+    game_mode = WAIT_TO_START;
+    ball_position = constants::GRID_HEIGHT / 2.0;
+}
+
+void Pong::switch_to_countdown() {
+    Serial.println(" -> COUNTDOWN");
+    game_mode = COUNTDOWN;
+    countdown_begin = current_millis;
+}
+
+void Pong::switch_to_playing() {
+    Serial.println(" -> PLAYING");
+    game_mode = PLAYING;
+    float mult = 1.0;
+    if (random(1)) {
+        float mult = -1.0;
+    }
+    ball_speed = 0.0025 * mult;
+}
+
+void Pong::switch_to_top_won() {
+    Serial.println(" -> TOP_WON");
+    game_mode = TOP_WON;
+    win_begin = current_millis;
+}
+
+void Pong::switch_to_bottom_won() {
+    Serial.println(" -> BOTTOM_WON");
+    game_mode = BOTTOM_WON;
+    win_begin = current_millis;
 }

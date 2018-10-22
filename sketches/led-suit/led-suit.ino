@@ -16,6 +16,7 @@
 #include "modes/perlin.h"
 #include "modes/streakers.h"
 #include "modes/text_scroller.h"
+#include "modes/pong.h"
 
 #ifdef __arm__
 // should use uinstd.h to define sbrk but Due causes a conflict
@@ -54,7 +55,7 @@ Mode * current_mode_ptr;
 // unsigned long loop_print_interval = 200;
 // LoopTimer loop_timer;
 
-int num_modes = 7;
+int num_modes = 8;
 int current_mode = num_modes - 1;
 
 void setup() {
@@ -153,6 +154,9 @@ void setup_next_mode(){
             break;
         case 6:
             current_mode_ptr = new TextScroller(leds);
+            break;
+        case 7:
+            current_mode_ptr = new Pong(leds);
             break;
     }
 }
