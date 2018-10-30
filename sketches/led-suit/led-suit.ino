@@ -1,5 +1,5 @@
 #define NUM_STREAKERS 10
-// #define LOOP_TIMING
+#define LOOP_TIMING
 
 #include <FastLED.h>
 #include <Arduino.h>

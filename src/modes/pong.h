@@ -11,6 +11,7 @@
 #define FADE_AMOUNT 100
 #define INITIAL_BALL_SPEED 0.0025
 #define RETURN_SPEED_MULTIPLIER 1.1
+#define COUNTDOWN_DURATION 3500
 
 class Pong: public Mode {
     public:
@@ -80,6 +81,12 @@ class Pong: public Mode {
         int top_zone_max;
         int bottom_zone_min;
         int bottom_zone_max;
+        int top_countdown_min;
+        int top_countdown_max;
+        int bottom_countdown_min;
+        int bottom_countdown_max;
+        int top_half_max_row;
+        int bottom_half_min_row;
         unsigned long countdown_begin;
         unsigned long win_begin;
         unsigned long both_pressed_begin;
