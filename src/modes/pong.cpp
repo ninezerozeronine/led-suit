@@ -176,6 +176,11 @@ void Pong::set_top_zone_size(float percentage) {
     float zone_width = (float(constants::GRID_HEIGHT) * 0.5) * conformed_percentage;
     top_zone_min = 0;
     top_zone_max = round(zone_width);
+    Serial.println("tzmin");
+    Serial.println(top_zone_min);
+    Serial.println("tzmax");
+    Serial.println(top_zone_max);
+
 }
 
 void Pong::set_bottom_zone_size(float percentage) {
@@ -183,6 +188,10 @@ void Pong::set_bottom_zone_size(float percentage) {
     float zone_width = (float(constants::GRID_HEIGHT) * 0.5) * conformed_percentage;
     bottom_zone_min = constants::GRID_HEIGHT - 1 - round(zone_width);
     bottom_zone_max = constants::GRID_HEIGHT - 1; 
+    Serial.println("bzmin");
+    Serial.println(bottom_zone_min);
+    Serial.println("bzmax");
+    Serial.println(bottom_zone_max);
 }
 
 void Pong::update_wait_to_start() {
@@ -295,7 +304,7 @@ void Pong::update_bottom_won() {
 }
 
 void Pong::return_ball() {
-    Serial.println("returned");
+    // Serial.println("returned");
     ball_speed *= -1.0 * RETURN_SPEED_MULTIPLIER;
 }
 
@@ -321,16 +330,24 @@ void Pong::draw_countdown() {
     // Draw top wiper
     for (int row = top_countdown_min; row <= top_countdown_max; row++) {
         for (int column = 0; column < constants::GRID_WIDTH; column++) {
-            int index = (row * constants::GRID_WIDTH) + column;
-            leds[index] = CRGB::White;
+            int led_grid_index = (row * constants::GRID_WIDTH) + column;
+            int led_index = pgm_read_word_near(constants::LED_GRID_INDECIES + led_grid_index);
+            // If the LED on the grid is in a position that has a physical LED
+            if (led_index >= 0) {
+                leds[led_index] = CRGB::White;
+            }
         }
     }
     
     // Draw bottom wiper
     for (int row = bottom_countdown_min; row <= bottom_countdown_max; row++) {
         for (int column = 0; column < constants::GRID_WIDTH; column++) {
-            int index = (row * constants::GRID_WIDTH) + column;
-            leds[index] = CRGB::White;
+            int led_grid_index = (row * constants::GRID_WIDTH) + column;
+            int led_index = pgm_read_word_near(constants::LED_GRID_INDECIES + led_grid_index);
+            // If the LED on the grid is in a position that has a physical LED
+            if (led_index >= 0) {
+                leds[led_index] = CRGB::White;
+            }
         }
     }
 }
@@ -362,11 +379,15 @@ void Pong::draw_endzones() {
     // Draw top
     for (int row = int(top_zone_min); row <= int(top_zone_max); row++) {
         for (int column = 0; column < constants::GRID_WIDTH; column++) {
-            int index = (row * constants::GRID_WIDTH) + column;
-            if (top_is_pressed) {
-                leds[index] = CRGB::White;
-            } else {
-                leds[index] = CRGB::Red;
+            int led_grid_index = (row * constants::GRID_WIDTH) + column;
+            int led_index = pgm_read_word_near(constants::LED_GRID_INDECIES + led_grid_index);
+            // If the LED on the grid is in a position that has a physical LED
+            if (led_index >= 0) {
+                if (top_is_pressed) {
+                    leds[led_index] = CRGB::White;
+                } else {
+                    leds[led_index] = CRGB::Red;
+                }
             }
         }
     }
@@ -374,11 +395,15 @@ void Pong::draw_endzones() {
     // Draw bottom
     for (int row = int(bottom_zone_min); row <= int(bottom_zone_max); row++) {
         for (int column = 0; column < constants::GRID_WIDTH; column++) {
-            int index = (row * constants::GRID_WIDTH) + column;
-            if (bottom_is_pressed) {
-                leds[index] = CRGB::White;
-            } else {
-                leds[index] = CRGB::Green;
+            int led_grid_index = (row * constants::GRID_WIDTH) + column;
+            int led_index = pgm_read_word_near(constants::LED_GRID_INDECIES + led_grid_index);
+            // If the LED on the grid is in a position that has a physical LED
+            if (led_index >= 0) {
+                if (bottom_is_pressed) {
+                    leds[led_index] = CRGB::White;
+                } else {
+                    leds[led_index] = CRGB::Green;
+                }
             }
         }
     }
@@ -393,8 +418,12 @@ void Pong::draw_ball() {
         row = 0;
     }
     for (int column = 0; column < constants::GRID_WIDTH; column++) {
-        int index = (row * constants::GRID_WIDTH) + column;
-        leds[index] = CRGB::Blue;
+        int led_grid_index = (row * constants::GRID_WIDTH) + column;
+        int led_index = pgm_read_word_near(constants::LED_GRID_INDECIES + led_grid_index);
+        // If the LED on the grid is in a position that has a physical LED
+        if (led_index >= 0) {
+            leds[led_index] = CRGB::Blue;
+        }
     }
 }
 
@@ -415,7 +444,7 @@ void Pong::switch_to_playing() {
     game_mode = PLAYING;
     float mult = 1.0;
     int random_val = random(0, 2);
-    Serial.println(random_val);
+    // Serial.println(random_val);
     if (random_val) {
         mult = -1.0;
     }
